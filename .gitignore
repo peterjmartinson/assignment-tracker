@@ -218,3 +218,4 @@ __marimo__/
 .streamlit/secrets.toml
 .env
 board.json
+.processed_emails.json

@@ -108,3 +108,55 @@ def card_needs_update(local_card, trello_card, config):
             return True
 
     return False
+
+def create_trello_card(card_data, config, api_key, api_token, dry_run=False):
+    """Create a new card on Trello in the configured ingest list (default: Backlog)."""
+    target_list_name = config.get("ingest_list", "Backlog")
+    list_id = config.get("lists", {}).get(target_list_name)
+    if not list_id:
+        list_id = list(config.get("lists", {}).values())[0]
+
+    title = card_data.get("formatted_title") or card_data.get("name")
+    payload = {
+        "key": api_key,
+        "token": api_token,
+        "name": title,
+        "idList": list_id,
+        "desc": card_data.get("desc", ""),
+        "due": card_data.get("due") or ""
+    }
+
+    kid_name = card_data.get("kid")
+    if kid_name and kid_name in config.get("profiles", {}):
+        profile = config["profiles"][kid_name]
+        payload["idLabels"] = [profile["label_id"]]
+        payload["cover"] = {"color": profile["cover_color"], "size": "normal"}
+
+    if dry_run:
+        return {"id": "dry-run-preview-id", "name": title, "status": "dry-run"}
+
+    url = "https://api.trello.com/1/cards"
+    res = requests.post(url, json=payload)
+    res.raise_for_status()
+    return res.json()
+
+def find_duplicate_card(parsed_item, active_cards):
+    """Check if a parsed assignment already exists on Trello board."""
+    target_title = (parsed_item.get("formatted_title") or "").strip().lower()
+    raw_title = (parsed_item.get("raw_title") or "").strip().lower()
+    target_kid = parsed_item.get("kid")
+
+    for card in active_cards:
+        card_name = (card.get("name") or "").strip().lower()
+        card_kid = card.get("kid")
+
+        # Match by kid (if known) and title
+        if target_kid and card_kid and target_kid.lower() != card_kid.lower():
+            continue
+
+        if card_name == target_title:
+            return card
+        if raw_title and (raw_title in card_name or card_name in raw_title):
+            return card
+
+    return None

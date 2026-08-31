@@ -80,3 +80,26 @@ Sync your local YAML state back to Trello:
 ```bash
 python main.py push
 ```
+
+---
+
+## Automated Google Classroom Email Ingestion
+
+The tracker includes an automated pipeline to poll Gmail IMAP (or ingest `.eml` files), parse Google Classroom notifications forwarded from your boys' school accounts, and automatically create Trello cards in **Backlog** with class-specific title formatting, kid labels, and due dates.
+
+### Quick Commands:
+* **Preview Ingestion (Dry Run):**
+  ```bash
+  python main.py ingest-email --dry-run
+  ```
+* **Test against a single `.eml` file:**
+  ```bash
+  python main.py ingest-email --file "path/to/assignment.eml" --dry-run
+  ```
+* **Run Live Ingestion (e.g., in Cron):**
+  ```bash
+  python main.py ingest-email
+  ```
+
+For complete instructions on generating a Gmail App Password, configuring Gmail filters/labels, and setting up twice-daily cron jobs on your basement server, see **[EMAIL_INGESTION.md](EMAIL_INGESTION.md)**.
+

@@ -9,6 +9,7 @@ from src.trello_utils import (
     fetch_active_cards,
     card_needs_update
 )
+from src.ingest import ingest_from_gmail, ingest_from_eml_file
 
 def pull_command():
     try:
@@ -59,7 +60,7 @@ def push_command(dry_run=False):
             kid_name = card.get('kid')
             if kid_name and kid_name in config.get('profiles', {}):
                 profile = config['profiles'][kid_name]
-                payload['idLabels'] = profile['label_id']
+                payload['idLabels'] = [profile['label_id']]
                 payload['cover'] = {'color': profile['cover_color'], 'size': 'normal'}
             else:
                 if card.get('cover'):
@@ -128,14 +129,35 @@ def push_command(dry_run=False):
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
+def ingest_email_command(dry_run=False, file_path=None, label_filter=None):
+    try:
+        if file_path:
+            ingest_from_eml_file(file_path, dry_run=dry_run)
+        else:
+            ingest_from_gmail(dry_run=dry_run, label_filter=label_filter)
+    except Exception as e:
+        print(f"Error during email ingestion: {e}", file=sys.stderr)
+        sys.exit(1)
+
 def main():
     parser = argparse.ArgumentParser(description="Trello Homework Tracker CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    # pull
     subparsers.add_parser("pull", help="Pull latest cards from Trello board to homework.yaml")
 
+    # push
     push_parser = subparsers.add_parser("push", help="Push local changes in homework.yaml to Trello board")
     push_parser.add_argument("--dry-run", action="store_true", help="Preview changes without executing them on Trello")
+
+    # ingest-email
+    ingest_parser = subparsers.add_parser(
+        "ingest-email",
+        help="Poll Gmail IMAP for forwarded Classroom notifications or ingest a .eml file and create Trello cards"
+    )
+    ingest_parser.add_argument("--dry-run", action="store_true", help="Preview extracted assignments without creating Trello cards or marking emails as read")
+    ingest_parser.add_argument("--file", "-f", help="Path to a specific .eml file to parse and ingest")
+    ingest_parser.add_argument("--label", "-l", help="Override specific Gmail label/mailbox to scan (defaults to labels in config.yaml)")
 
     args = parser.parse_args()
 
@@ -143,6 +165,8 @@ def main():
         pull_command()
     elif args.command == "push":
         push_command(dry_run=args.dry_run)
+    elif args.command == "ingest-email":
+        ingest_email_command(dry_run=args.dry_run, file_path=args.file, label_filter=args.label)
 
 if __name__ == "__main__":
     main()

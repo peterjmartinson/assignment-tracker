@@ -1,4 +1,5 @@
 board_id: "6a0dd7e64e205c4e01db1b21"
+ingest_list: "Backlog"
 
 # Map human-readable names to Trello IDs
 lists:
@@ -7,11 +8,42 @@ lists:
   "Done": "6a0dd80766d43b59369e7eeb"
   "Backlog": "6a0dd7f189ae4d6d94e4332e"
 
+# Gmail IMAP Configuration for automated server polling
+gmail:
+  host: "imap.gmail.com"
+  port: 993
+  mark_as_read: true
+  # Optional: Move to a processed label if you create it in Gmail
+  # processed_label: "Classroom/Processed"
+
 # Pre-defined profiles for your boys
 profiles:
   Isaac:
     label_id: "6a0dd7e769a7a10ca5f5ced0"
     cover_color: "blue"
+    gmail_label: "Classroom/Isaac"
+    email_patterns:
+      - "isaac.martinson@mainlineclassical.org"
+      - "isaac"
   Asher:
     label_id: "6a0dd7e67d3bffa03d62a17a"
     cover_color: "green"
+    gmail_label: "Classroom/Asher"
+    email_patterns:
+      - "asher.martinson@mainlineclassical.org"
+      - "asher"
+
+# Formatting rules to translate Classroom class names into Trello card title prefixes
+class_rules:
+  - match: "(?i)art\\s*history"
+    prefix: "[Art History]"
+  - match: "(?i)french"
+    prefix: "[French]"
+  - match: "(?i)beast\\s*academy|bao"
+    prefix: "[BAO]"
+  - match: "(?i)math|arithmetic"
+    prefix: "[Math]"
+  - match: "(?i)eng\\s*lit|english|literature"
+    prefix: "[Eng Lit]"
+  - match: "(?i)alcumus"
+    prefix: "[Alcumus]"
