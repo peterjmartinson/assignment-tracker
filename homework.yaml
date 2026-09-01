@@ -73,7 +73,7 @@
   kid: Isaac
   list: Backlog
   due: null
-  cover: null
+  cover: blue
   desc: 'Class: French Fifth Grade 5th'
 - id: 6a962dea53be96e1d243d6b4
   name: "[Notification settings] Fwd: New announcement: \"Dear MLCA Parents, I hope\
@@ -90,7 +90,7 @@
   kid: Asher
   list: Backlog
   due: '2026-05-27T23:59:00.000Z'
-  cover: null
+  cover: green
   desc: 'The instructions are attached.
 
 

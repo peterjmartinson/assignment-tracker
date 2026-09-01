@@ -102,8 +102,26 @@ def push_command(dry_run=False):
                     url = "https://api.trello.com/1/cards"
                     res = requests.post(url, json=payload)
                     if res.status_code == 200:
+                        created_card = res.json()
                         print(f"Created: '{card['name']}'")
                         created += 1
+
+                        # Apply cover color via PUT (Trello ignores cover on POST)
+                        cover_color = None
+                        if kid_name and kid_name in config.get('profiles', {}):
+                            cover_color = config['profiles'][kid_name].get('cover_color')
+                        elif card.get('cover'):
+                            cover_color = card.get('cover')
+
+                        if cover_color and created_card.get('id'):
+                            try:
+                                requests.put(
+                                    f"https://api.trello.com/1/cards/{created_card['id']}",
+                                    params={'key': api_key, 'token': api_token},
+                                    json={"cover": {"color": cover_color, "size": "normal"}}
+                                )
+                            except Exception:
+                                pass
                     else:
                         print(f"Failed to create '{card['name']}': {res.text}")
                         failed += 1

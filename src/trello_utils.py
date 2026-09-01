@@ -118,8 +118,6 @@ def create_trello_card(card_data, config, api_key, api_token, dry_run=False):
 
     title = card_data.get("formatted_title") or card_data.get("name")
     payload = {
-        "key": api_key,
-        "token": api_token,
         "name": title,
         "idList": list_id,
         "desc": card_data.get("desc", ""),
@@ -127,19 +125,39 @@ def create_trello_card(card_data, config, api_key, api_token, dry_run=False):
         "pos": card_data.get("pos", "bottom")
     }
 
+    cover_color = None
     kid_name = card_data.get("kid")
     if kid_name and kid_name in config.get("profiles", {}):
         profile = config["profiles"][kid_name]
         payload["idLabels"] = [profile["label_id"]]
-        payload["cover"] = {"color": profile["cover_color"], "size": "normal"}
+        cover_color = profile.get("cover_color")
+    elif card_data.get("cover"):
+        cover_color = card_data.get("cover")
 
     if dry_run:
-        return {"id": "dry-run-preview-id", "name": title, "status": "dry-run"}
+        return {"id": "dry-run-preview-id", "name": title, "status": "dry-run", "cover": {"color": cover_color}}
 
     url = "https://api.trello.com/1/cards"
-    res = requests.post(url, json=payload)
+    params = {"key": api_key, "token": api_token}
+    res = requests.post(url, params=params, json=payload)
     res.raise_for_status()
-    return res.json()
+    created_card = res.json()
+
+    # Trello POST /1/cards ignores cover in creation payload; set it via PUT /1/cards/{id}
+    if cover_color and created_card.get("id"):
+        try:
+            put_url = f"https://api.trello.com/1/cards/{created_card['id']}"
+            put_res = requests.put(
+                put_url,
+                params=params,
+                json={"cover": {"color": cover_color, "size": "normal"}}
+            )
+            if put_res.status_code == 200:
+                created_card["cover"] = put_res.json().get("cover")
+        except Exception as e:
+            print(f"Warning: Failed to set cover color '{cover_color}': {e}")
+
+    return created_card
 
 def find_duplicate_card(parsed_item, active_cards):
     """Check if a parsed assignment already exists on Trello board."""
