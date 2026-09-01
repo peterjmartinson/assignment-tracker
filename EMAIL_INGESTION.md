@@ -137,23 +137,42 @@ python main.py ingest-email
 
 ---
 
+---
+
 ## ⏰ Scheduling on Your Basement Server
 
-### Linux Crontab (e.g. Twice Daily at 7:00 AM & 7:00 PM)
-On your basement server, open crontab:
-```bash
-crontab -e
-```
-Add the following entry (adjust paths to your project and python binary/venv):
+### Method A: Using the Automated Runner Script (Recommended)
+
+A helper script [`cron_ingest.sh`](cron_ingest.sh) is included that automatically resolves the virtual environment, executes the pipeline, and logs timestamps:
+
+1. Make the script executable:
+   ```bash
+   chmod +x cron_ingest.sh
+   ```
+2. Open crontab:
+   ```bash
+   crontab -e
+   ```
+3. Add the scheduled entry (e.g. twice daily at 7:00 AM & 7:00 PM):
+   ```cron
+   0 7,19 * * * /home/user/assignment-tracker/cron_ingest.sh >> /var/log/assignment-tracker.log 2>&1
+   ```
+
+---
+
+### Method B: Direct Crontab Entry
+
 ```cron
 0 7,19 * * * cd /home/user/assignment-tracker && /home/user/assignment-tracker/.venv/bin/python main.py ingest-email >> /var/log/assignment-tracker.log 2>&1
 ```
 
-### Windows Task Scheduler (Alternative)
-If running on Windows:
+---
+
+### Method C: Windows Task Scheduler (If server runs Windows)
 1. Open **Task Scheduler** $\to$ **Create Basic Task**.
 2. Trigger: **Daily** (set to repeat every 12 hours).
 3. Action: **Start a program**:
-   - Program: `python.exe` (or path inside your venv)
+   - Program: `python.exe` (or `uv.exe` / path inside `.venv\Scripts\python.exe`)
    - Arguments: `main.py ingest-email`
    - Start in: `C:\path\to\assignment-tracker`
+
