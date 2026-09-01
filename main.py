@@ -1,6 +1,190 @@
-def main():
-    print("Hello from assignment-tracker!")
+import argparse
+import sys
+import requests
+from src.trello_utils import (
+    load_config,
+    load_homework,
+    save_homework,
+    get_credentials,
+    fetch_active_cards,
+    card_needs_update
+)
+from src.ingest import ingest_from_gmail, ingest_from_eml_file
 
+def pull_command():
+    try:
+        config = load_config()
+        api_key, api_token = get_credentials()
+        
+        print("Fetching cards from Trello...")
+        cards = fetch_active_cards(config, api_key, api_token)
+        save_homework(cards)
+        print(f"Successfully pulled {len(cards)} cards and saved them to homework.yaml.")
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+def push_command(dry_run=False):
+    try:
+        config = load_config()
+        local_cards = load_homework()
+        api_key, api_token = get_credentials()
+
+        print("Fetching current state from Trello...")
+        active_cards = fetch_active_cards(config, api_key, api_token)
+        trello_state = {c['id']: c for c in active_cards}
+
+        created = 0
+        updated = 0
+        skipped = 0
+        failed = 0
+
+        for card in local_cards:
+            list_id = config['lists'].get(card['list'])
+            if not list_id:
+                print(f"Skipping '{card['name']}': Unknown list '{card['list']}'")
+                skipped += 1
+                continue
+
+            # Build the payload
+            payload = {
+                'key': api_key,
+                'token': api_token,
+                'name': card['name'],
+                'idList': list_id,
+                'desc': card.get('desc', ''),
+                'due': card.get('due', '') or ''
+            }
+
+            # Apply label and cover color based on the kid profile
+            kid_name = card.get('kid')
+            if kid_name and kid_name in config.get('profiles', {}):
+                profile = config['profiles'][kid_name]
+                payload['idLabels'] = [profile['label_id']]
+                payload['cover'] = {'color': profile['cover_color'], 'size': 'normal'}
+            else:
+                if card.get('cover'):
+                    payload['cover'] = {'color': card['cover'], 'size': 'normal'}
+                else:
+                    payload['cover'] = {'color': None, 'size': 'normal'}
+
+            card_id = card.get('id')
+
+            if card_id:
+                # Update flow
+                if card_id not in trello_state:
+                    print(f"Warning: Card '{card['name']}' has ID {card_id} but doesn't exist on Trello. Skipping.")
+                    failed += 1
+                    continue
+
+                trello_card = trello_state[card_id]
+                if card_needs_update(card, trello_card, config):
+                    if dry_run:
+                        print(f"[DRY RUN] Would update: '{card['name']}'")
+                        updated += 1
+                    else:
+                        url = f"https://api.trello.com/1/cards/{card_id}"
+                        res = requests.put(url, json=payload)
+                        if res.status_code == 200:
+                            print(f"Updated: '{card['name']}'")
+                            updated += 1
+                        else:
+                            print(f"Failed to update '{card['name']}': {res.text}")
+                            failed += 1
+                else:
+                    skipped += 1
+            else:
+                # Create flow
+                if dry_run:
+                    print(f"[DRY RUN] Would create: '{card['name']}'")
+                    created += 1
+                else:
+                    url = "https://api.trello.com/1/cards"
+                    res = requests.post(url, json=payload)
+                    if res.status_code == 200:
+                        created_card = res.json()
+                        print(f"Created: '{card['name']}'")
+                        created += 1
+
+                        # Apply cover color via PUT (Trello ignores cover on POST)
+                        cover_color = None
+                        if kid_name and kid_name in config.get('profiles', {}):
+                            cover_color = config['profiles'][kid_name].get('cover_color')
+                        elif card.get('cover'):
+                            cover_color = card.get('cover')
+
+                        if cover_color and created_card.get('id'):
+                            try:
+                                requests.put(
+                                    f"https://api.trello.com/1/cards/{created_card['id']}",
+                                    params={'key': api_key, 'token': api_token},
+                                    json={"cover": {"color": cover_color, "size": "normal"}}
+                                )
+                            except Exception:
+                                pass
+                    else:
+                        print(f"Failed to create '{card['name']}': {res.text}")
+                        failed += 1
+
+        print("\n--- Push Summary ---")
+        if dry_run:
+            print(f"To Create: {created}")
+            print(f"To Update: {updated}")
+            print(f"To Skip:   {skipped}")
+            if failed > 0:
+                print(f"Issues:    {failed}")
+        else:
+            print(f"Created:   {created}")
+            print(f"Updated:   {updated}")
+            print(f"Skipped:   {skipped}")
+            if failed > 0:
+                print(f"Failed:    {failed}")
+            
+            if created > 0 or updated > 0:
+                print("\nTip: Run 'python main.py pull' to refresh local IDs and cache.")
+
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+def ingest_email_command(dry_run=False, file_path=None, label_filter=None):
+    try:
+        if file_path:
+            ingest_from_eml_file(file_path, dry_run=dry_run)
+        else:
+            ingest_from_gmail(dry_run=dry_run, label_filter=label_filter)
+    except Exception as e:
+        print(f"Error during email ingestion: {e}", file=sys.stderr)
+        sys.exit(1)
+
+def main():
+    parser = argparse.ArgumentParser(description="Trello Homework Tracker CLI")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    # pull
+    subparsers.add_parser("pull", help="Pull latest cards from Trello board to homework.yaml")
+
+    # push
+    push_parser = subparsers.add_parser("push", help="Push local changes in homework.yaml to Trello board")
+    push_parser.add_argument("--dry-run", action="store_true", help="Preview changes without executing them on Trello")
+
+    # ingest-email
+    ingest_parser = subparsers.add_parser(
+        "ingest-email",
+        help="Poll Gmail IMAP for forwarded Classroom notifications or ingest a .eml file and create Trello cards"
+    )
+    ingest_parser.add_argument("--dry-run", action="store_true", help="Preview extracted assignments without creating Trello cards or marking emails as read")
+    ingest_parser.add_argument("--file", "-f", help="Path to a specific .eml file to parse and ingest")
+    ingest_parser.add_argument("--label", "-l", help="Override specific Gmail label/mailbox to scan (defaults to labels in config.yaml)")
+
+    args = parser.parse_args()
+
+    if args.command == "pull":
+        pull_command()
+    elif args.command == "push":
+        push_command(dry_run=args.dry_run)
+    elif args.command == "ingest-email":
+        ingest_email_command(dry_run=args.dry_run, file_path=args.file, label_filter=args.label)
 
 if __name__ == "__main__":
     main()

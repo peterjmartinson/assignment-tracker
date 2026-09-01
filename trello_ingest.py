@@ -1,11 +1,20 @@
 import json
+import os
 import requests
 from dotenv import load_dotenv
 load_dotenv()
 
+API_KEY = os.getenv("TRELLO_API_KEY")
+TOKEN = os.getenv("TRELLO_API_TOKEN")
+LIST_ID = os.getenv("TRELLO_LIST_ID", "")
+
 filename = "asher_homework.json"
 
 # 1. Fetch board labels to get the exact ID for the 'blue' label
+if not API_KEY or not TOKEN or not LIST_ID:
+    print("Please ensure TRELLO_API_KEY, TRELLO_API_TOKEN, and TRELLO_LIST_ID are set in .env")
+    exit(1)
+
 list_url = f"https://api.trello.com/1/lists/{LIST_ID}"
 board_id = requests.get(list_url, params={"key": API_KEY, "token": TOKEN}).json()["idBoard"]
 
