@@ -61,6 +61,42 @@
   desc: 'BA 1, Ch 10
 
     https://enrichment.beastclassroom.com/school/classroom/1/10/1583/1'
+- id: 6a962de799c6e8bac18616a4
+  name: "[Assignment] Fwd: New announcement: \"Dear MLCA Parents, I hope that summer\u2026"
+  kid: Isaac
+  list: Backlog
+  due: null
+  cover: null
+  desc: ''
+- id: 6a962de81b0e70e0bfa214af
+  name: '[French] Test - Histoire d''une Revanche'
+  kid: Isaac
+  list: Backlog
+  due: null
+  cover: null
+  desc: 'Class: French Fifth Grade 5th'
+- id: 6a962dea53be96e1d243d6b4
+  name: "[Notification settings] Fwd: New announcement: \"Dear MLCA Parents, I hope\
+    \ that summer\u2026"
+  kid: Asher
+  list: Backlog
+  due: null
+  cover: null
+  desc: 'Classroom Link: https://notifications.googleapis.com/email/redirect?t=AFG8qyV-6j7vlm-4aONxrXE8F_Fb85ppq--Ux8FFF69yGBk0IBVy31hNUD_T4N2TbqziaokEkikVsqw2Yep7theeBrp48DbJIeLj0LIRAXQA-RT_I1-xpesMOkjzbOu-4vzx_-EM0fVjhxvFz80ICIakBv5aPunj7UcOuXnlFo2Z6yzYm1dPsoh0vruF4HQ_gCpG60A7EprS2Snes7ZsqzLbswH2H28S3mTejF4MxseLcqYFj5zI4nhIdglY3Rlg1XNVJLhquZG6fzF8o_nEjvUq-WT1W2WfU7lgwuB0Gwt-UWOmSVOOHeStZrNWo5ZE1Z_fypXAouuO7R-IovEuLlzD1NZYI67EygTSpgjl47cZdL4hVTwi7LIMuF1Lkb4G4-u_o7uQeJVBY7PMb3VzWc0&r=eJyNjD0PgjAQQH-Njm0IspgQJJbBAZgcHC-Xpq1p70ivDPLrjR-Do-vLe8-XsshRa0DklYoox-yiVchJ9x929sxic4dMJdBqW_9tMIJIZk6_EerZDM1s-noy7jBtl0Yvejb4GO_XatrGZtxuVWcThLirDYi3WSXIJZAwnRIEioHsex0QouLs9sPLbv9ynxOyTNE&s=ALHZ2r6JRu4dEKqMh2Ek7LlCeOuq
+
+    Class: Notification settings'
+- id: 6a962dead3e82215b54adb2a
+  name: '[Art History] Homework for May 27th, 2026'
+  kid: Asher
+  list: Backlog
+  due: '2026-05-27T23:59:00.000Z'
+  cover: null
+  desc: 'The instructions are attached.
+
+
+    Classroom Link: https://notifications.googleapis.com/email/redirect?t=AFG8qyVY-nrONxfOM7mIw51vpGtE3NJyjsEa0jpq9bceWtY_-zFIjJoIfwk-DgSGWsfdDmc4nx8xciy6lkWeTF1Efa-of9ydcJCRggEbc-927e5FrsKP7eXtWZhTu9j7Z4tuc5hlgXeAlj3EhG1yK5HkNWjEnEfDpKdMjKvbjqnmyrxxCzmZvroRoyy2MPiZ4_LQ2coeGf1PSI_W9qUirdhoBKaCmfTjEfCxEpS7z_1mbCbKxg9gT_KqQ6LTviiTGDfhTm4ijz9ePhzN_RPTSdV8ySALYai1i9Ujw8TOkp_xaw17Z2Ab11BIV0ai4ZyN16TV0_uXSfYVdP__jF0UaIlUE5GO3SvXTOrcAQUiQ3RZxHHDnD_YQO1Zci7zw5HE-UG6BLMcjNjEUx7fSivDRQvlfeepM39_qLyS9NE0_TdWCEO6kMWV6b40mRIF&r=eJyNjT0LwjAQQH-Njjm0m1BqMQ4d2iK0g-NxhiaS5CSXgvbXix-Do-vjPZ7N-SY7ACTiOWZRE_PkjSIOUH_YwTKLSRVxzC7OprTfhjyKJObwGxH0ur53w1i0y7i012YBhF6fN52mR69p2w2nAi4mo_NSmYDOrwqNYk1SAVN2UTjuA7roXTTvhSP0itO0Pr7s8i_3CczOUGg&s=ALHZ2r4YP6MyBhGpnS7i0tFrz6yo
+
+    Class: Art History - 1st grade'
 - id: 6a92d06a68e7be9d461a654b
   name: Read 15 minutes
   kid: Asher
