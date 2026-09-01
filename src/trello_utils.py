@@ -123,7 +123,8 @@ def create_trello_card(card_data, config, api_key, api_token, dry_run=False):
         "name": title,
         "idList": list_id,
         "desc": card_data.get("desc", ""),
-        "due": card_data.get("due") or ""
+        "due": card_data.get("due") or "",
+        "pos": card_data.get("pos", "bottom")
     }
 
     kid_name = card_data.get("kid")

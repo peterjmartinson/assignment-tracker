@@ -24,12 +24,21 @@ def ingest_from_eml_file(file_path, dry_run=False):
         raise FileNotFoundError(f"EML file not found: {file_path}")
 
     parsed = parse_eml_file(file_path, config)
-    print(f"Parsed Assignment:")
-    print(f"  Kid:   {parsed.get('kid') or 'Unknown'}")
-    print(f"  Class: {parsed.get('class_name') or 'Unknown'}")
-    print(f"  Title: {parsed['formatted_title']}")
-    print(f"  Due:   {parsed.get('due') or 'None'}")
-    print(f"  MsgId: {parsed.get('message_id') or 'None'}")
+
+    if not parsed.get("is_actionable", True):
+        print(f"\n[FILTER] Non-actionable notification type (Subject: '{parsed.get('subject')}'). Skipping card creation.")
+        return {"status": "filtered", "reason": "non_actionable"}
+
+    if parsed.get("is_discovery"):
+        print(f"\n⚠️ [DISCOVERY ALERT] Unrecognized class detected: '{parsed.get('class_name') or 'Unknown'}'. Card will be created at TOP of Backlog.")
+
+    print(f"\nParsed Assignment:")
+    print(f"  Kid:       {parsed.get('kid') or 'Unknown'}")
+    print(f"  Class:     {parsed.get('class_name') or 'Unknown'}")
+    print(f"  Title:     {parsed['formatted_title']}")
+    print(f"  Due:       {parsed.get('due') or 'None'}")
+    print(f"  Position:  {parsed.get('pos', 'bottom')}")
+    print(f"  MsgId:     {parsed.get('message_id') or 'None'}")
 
     msg_id = parsed.get("message_id")
     if msg_id and tracker.is_processed(msg_id):
@@ -44,7 +53,7 @@ def ingest_from_eml_file(file_path, dry_run=False):
         return {"status": "skipped", "reason": "duplicate", "card": duplicate}
 
     if dry_run:
-        print(f"\n[DRY RUN] Would create Trello card: '{parsed['formatted_title']}' in Backlog")
+        print(f"\n[DRY RUN] Would create Trello card: '{parsed['formatted_title']}' in Backlog (pos: {parsed.get('pos', 'bottom')})")
         return {"status": "dry-run", "card": parsed}
 
     created = create_trello_card(parsed, config, api_key, api_token, dry_run=False)
@@ -89,7 +98,6 @@ def ingest_from_gmail(dry_run=False, label_filter=None):
                 mailboxes_to_scan.append({"folder": folder, "kid": kid_name})
 
     if not mailboxes_to_scan:
-        # Fallback to default Gmail search query or INBOX
         mailboxes_to_scan.append({"folder": "INBOX", "kid": None})
 
     print(f"Connecting to Gmail IMAP ({host}:{port})...")
@@ -99,6 +107,8 @@ def ingest_from_gmail(dry_run=False, label_filter=None):
         "scanned_folders": 0,
         "emails_found": 0,
         "created": 0,
+        "discovery_alerts": 0,
+        "skipped_filtered": 0,
         "skipped_duplicate": 0,
         "skipped_already_processed": 0,
         "failed": 0
@@ -135,11 +145,29 @@ def ingest_from_gmail(dry_run=False, label_filter=None):
                 parsed = parse_classroom_email(msg, config, mailbox_kid=mailbox_kid)
 
                 msg_id = parsed.get("message_id")
-                print(f"\n  Processing: '{parsed.get('subject')}'")
-                print(f"    Target:  {parsed['formatted_title']} (Kid: {parsed.get('kid') or 'Unknown'})")
-                print(f"    Due:     {parsed.get('due') or 'None'}")
+                subject = parsed.get("subject") or ""
 
-                # Check state tracker
+                # 1. Check Action Filter (e.g. Announcements)
+                if not parsed.get("is_actionable", True):
+                    print(f"\n  [FILTER] Skipping non-actionable email: '{subject}'")
+                    stats["skipped_filtered"] += 1
+                    if msg_id and not dry_run:
+                        tracker.mark_processed(msg_id, {"subject": subject, "status": "filtered_non_actionable"})
+                    if not dry_run and mark_as_read:
+                        client.mark_as_read(uid, folder_name)
+                    continue
+
+                # 2. Log Discovery Alert if applicable
+                if parsed.get("is_discovery"):
+                    print(f"\n  ⚠️ [DISCOVERY ALERT] Unrecognized class: '{parsed.get('class_name')}' for {parsed.get('kid') or 'Unknown'}")
+                    stats["discovery_alerts"] += 1
+
+                print(f"\n  Processing: '{subject}'")
+                print(f"    Target:    {parsed['formatted_title']} (Kid: {parsed.get('kid') or 'Unknown'})")
+                print(f"    Due:       {parsed.get('due') or 'None'}")
+                print(f"    Position:  {parsed.get('pos', 'bottom')}")
+
+                # 3. Check State Tracker
                 if msg_id and tracker.is_processed(msg_id):
                     print(f"    [SKIP] Message-ID already processed in state tracker.")
                     stats["skipped_already_processed"] += 1
@@ -147,7 +175,7 @@ def ingest_from_gmail(dry_run=False, label_filter=None):
                         client.mark_as_read(uid, folder_name)
                     continue
 
-                # Check Trello duplicates
+                # 4. Check Trello Duplicates
                 duplicate = find_duplicate_card(parsed, active_cards)
                 if duplicate:
                     print(f"    [SKIP] Card already exists on Trello: '{duplicate['name']}' in '{duplicate['list']}'")
@@ -158,9 +186,9 @@ def ingest_from_gmail(dry_run=False, label_filter=None):
                         client.mark_as_read(uid, folder_name)
                     continue
 
-                # Create card
+                # 5. Create Trello Card
                 if dry_run:
-                    print(f"    [DRY RUN] Would create card: '{parsed['formatted_title']}' in Backlog")
+                    print(f"    [DRY RUN] Would create card: '{parsed['formatted_title']}' in Backlog (pos: {parsed.get('pos', 'bottom')})")
                     stats["created"] += 1
                 else:
                     try:
@@ -168,7 +196,7 @@ def ingest_from_gmail(dry_run=False, label_filter=None):
                         print(f"    [SUCCESS] Created card '{parsed['formatted_title']}' (ID: {created.get('id')})")
                         stats["created"] += 1
 
-                        # Append to in-memory active_cards to prevent duplicates within same batch
+                        # Append to in-memory active_cards to prevent duplicate creation in same run
                         active_cards.append({
                             "id": created.get("id"),
                             "name": parsed["formatted_title"],
@@ -182,7 +210,8 @@ def ingest_from_gmail(dry_run=False, label_filter=None):
                             tracker.mark_processed(msg_id, {
                                 "title": parsed["formatted_title"],
                                 "kid": parsed.get("kid"),
-                                "card_id": created.get("id")
+                                "card_id": created.get("id"),
+                                "is_discovery": parsed.get("is_discovery", False)
                             })
 
                         # Mark message processed on IMAP
@@ -199,6 +228,8 @@ def ingest_from_gmail(dry_run=False, label_filter=None):
         print(f"Cards To Create (Dry Run):   {stats['created']}")
     else:
         print(f"Cards Created on Trello:     {stats['created']}")
+    print(f"Discovery Alerts Triggered:  {stats['discovery_alerts']}")
+    print(f"Filtered (Announcements):    {stats['skipped_filtered']}")
     print(f"Skipped (Board Duplicates):  {stats['skipped_duplicate']}")
     print(f"Skipped (Already Processed): {stats['skipped_already_processed']}")
     if stats["failed"] > 0:

@@ -16,7 +16,14 @@ gmail:
   # Optional: Move to a processed label if you create it in Gmail
   # processed_label: "Classroom/Processed"
 
-# Pre-defined profiles for your boys
+# Action Type Allowlist (only actionable task notifications are ingested; drops announcements and newsletters)
+allowed_actions:
+  - "New assignment"
+  - "Due tomorrow"
+  - "Due soon"
+  - "New question"
+
+# Pre-defined profiles for your boys with class keyword sentinels
 profiles:
   Isaac:
     label_id: "6a0dd7e769a7a10ca5f5ced0"
@@ -25,6 +32,20 @@ profiles:
     email_patterns:
       - "isaac.martinson@mainlineclassical.org"
       - "isaac"
+    classes:
+      - name: "Math"
+        prefix: "[Math]"
+        keywords: ["math", "beast", "bao", "alcumus", "arithmetic", "algebra", "fractions", "division", "multiplication"]
+      - name: "French"
+        prefix: "[French]"
+        keywords: ["french", "français", "vocab", "revanche", "monte cristo"]
+      - name: "Art History"
+        prefix: "[Art History]"
+        keywords: ["art history", "art"]
+      - name: "English Literature"
+        prefix: "[Eng Lit]"
+        keywords: ["eng lit", "english", "literature", "essay", "draft", "reading", "ch."]
+
   Asher:
     label_id: "6a0dd7e67d3bffa03d62a17a"
     cover_color: "green"
@@ -32,8 +53,18 @@ profiles:
     email_patterns:
       - "asher.martinson@mainlineclassical.org"
       - "asher"
+    classes:
+      - name: "Math"
+        prefix: "[Math]"
+        keywords: ["math", "beast", "bao", "kangaroo", "greg tang", "addition", "subtraction", "counting", "number line", "grouping"]
+      - name: "Art History"
+        prefix: "[Art History]"
+        keywords: ["art history", "art"]
+      - name: "Reading"
+        prefix: "[Reading]"
+        keywords: ["reading", "read", "phonics", "english"]
 
-# Formatting rules to translate Classroom class names into Trello card title prefixes
+# Global fallback formatting rules (used if general keyword matches)
 class_rules:
   - match: "(?i)art\\s*history"
     prefix: "[Art History]"

@@ -64,7 +64,6 @@ def identify_kid(msg, config, mailbox_kid=None):
 
     for kid_name, profile in profiles.items():
         patterns = profile.get("email_patterns", [])
-        # Default pattern is kid's name in lower-case
         patterns = patterns + [kid_name.lower()]
         for pat in patterns:
             if pat.lower() in all_hdrs:
@@ -83,12 +82,58 @@ def identify_kid(msg, config, mailbox_kid=None):
 
     return None
 
+def is_actionable_notification(subject, config):
+    """Check if the email action type is in the allowed actionable list (drops announcements, etc.)."""
+    allowed_actions = config.get("allowed_actions", [
+        "New assignment",
+        "Due tomorrow",
+        "Due soon",
+        "New question"
+    ])
+    
+    clean_subj = clean_text(subject)
+    for action in allowed_actions:
+        # Match e.g. "New assignment:", "Fwd: New assignment:", "Due tomorrow:"
+        if re.search(rf'(?:^|\b){re.escape(action)}\b', clean_subj, re.IGNORECASE):
+            return True, action
+
+    return False, None
+
+def match_class_prefix(class_name, assignment_title, subject, kid_name, config):
+    """
+    Match class name and title against kid-specific keyword sentinels or global class_rules.
+    If no match is found, triggers a [DISCOVERY ALERT].
+    """
+    search_context = f"{class_name or ''} {assignment_title or ''} {subject or ''}".lower()
+    profiles = config.get("profiles", {})
+
+    # 1. Check kid-specific class keyword sentinels
+    if kid_name and kid_name in profiles:
+        kid_classes = profiles[kid_name].get("classes", [])
+        for cls in kid_classes:
+            prefix = cls.get("prefix")
+            keywords = cls.get("keywords", [])
+            for kw in keywords:
+                # Use word boundary or direct substring
+                if re.search(rf'\b{re.escape(kw.lower())}\b', search_context) or kw.lower() in search_context:
+                    return prefix, False
+
+    # 2. Check global class rules
+    class_rules = config.get("class_rules", [])
+    if class_name:
+        for rule in class_rules:
+            pattern = rule.get("match")
+            if pattern and re.search(pattern, search_context):
+                return rule.get("prefix"), False
+
+    # 3. No match found -> Trigger DISCOVERY ALERT
+    return "[DISCOVERY ALERT]", True
+
 def extract_due_date(text, reference_date=None):
-    """Extract and normalize due dates from text (e.g. 'for May 27th, 2026', 'Due: May 27', 'Due tomorrow')."""
+    """Extract and normalize due dates from text."""
     if not text:
         return None
 
-    # Match patterns like: "May 27th, 2026", "May 27 2026", "May 27, 2026", "05/27/2026"
     date_regexes = [
         r'(?:due\s+on|due\s+date:?|due:?|for)\s+([A-Za-z]+\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4})',
         r'(?:due\s+on|due\s+date:?|due:?|for)\s+([A-Za-z]+\s+\d{1,2}(?:st|nd|rd|th)?)',
@@ -100,52 +145,17 @@ def extract_due_date(text, reference_date=None):
         m = re.search(regex, text, re.IGNORECASE)
         if m:
             date_str = m.group(1).strip()
-            # Clean ordinal suffixes: 27th -> 27
             cleaned = re.sub(r'(\d+)(st|nd|rd|th)', r'\1', date_str, flags=re.IGNORECASE)
             try:
                 dt = date_parser.parse(cleaned, default=reference_date or datetime.now())
-                # Normalize time to 23:59:00 UTC (or standard end of day)
                 return dt.strftime('%Y-%m-%dT23:59:00.000Z')
             except Exception:
                 continue
 
     return None
 
-def format_card_title(class_name, assignment_title, config):
-    """Format the card title according to class rules in config.yaml."""
-    if not assignment_title:
-        assignment_title = "Untitled Assignment"
-
-    clean_title = clean_text(assignment_title)
-    # Strip any existing quotes
-    clean_title = clean_title.strip('"\'')
-
-    # If title already has bracketed prefix, check if it's already formatted
-    if clean_title.startswith("[") and "]" in clean_title:
-        return clean_title
-
-    class_rules = config.get("class_rules", [])
-    matched_prefix = None
-
-    if class_name:
-        for rule in class_rules:
-            pattern = rule.get("match")
-            if pattern and re.search(pattern, class_name):
-                matched_prefix = rule.get("prefix")
-                break
-
-    if not matched_prefix:
-        if class_name:
-            # Clean class name (e.g. 'Art History - 1st grade' -> 'Art History')
-            short_class = re.sub(r'\s*-\s*\d+(?:st|nd|rd|th)?\s*grade.*$', '', class_name, flags=re.IGNORECASE).strip()
-            matched_prefix = f"[{short_class}]"
-        else:
-            matched_prefix = "[Assignment]"
-
-    return f"{matched_prefix} {clean_title}"
-
 def parse_classroom_email(msg, config, mailbox_kid=None):
-    """Parse a Google Classroom email into structured assignment info."""
+    """Parse a Google Classroom email with action filtering and keyword sentinel discovery."""
     subject = msg.get("Subject") or ""
     message_id = msg.get("Message-ID") or ""
     email_date = msg.get("Date")
@@ -160,38 +170,40 @@ def parse_classroom_email(msg, config, mailbox_kid=None):
     kid = identify_kid(msg, config, mailbox_kid=mailbox_kid)
     plain_body, html_body = extract_body(msg)
 
-    # 1. Extract Assignment Title
+    # 1. Action Type Filter (Action Allowlist)
+    is_actionable, matched_action = is_actionable_notification(subject, config)
+    if not is_actionable:
+        return {
+            "is_actionable": False,
+            "skip_reason": "non_actionable_notification",
+            "kid": kid,
+            "subject": subject,
+            "message_id": message_id
+        }
+
+    # 2. Extract Assignment Title
     assignment_title = None
-    # Check subject: New assignment: "Homework for May 27th, 2026"
-    subj_match = re.search(r'(?:New assignment|Due tomorrow|Due soon|New question|New material):\s*[\"“]([^\r\n\"”]+)[\"”]', subject, re.IGNORECASE)
+    subj_match = re.search(r'(?:New assignment|Due tomorrow|Due soon|New question):\s*[\"“]([^\r\n\"”]+)[\"”]', subject, re.IGNORECASE)
     if subj_match:
         assignment_title = clean_text(subj_match.group(1))
     else:
-        # Check without quotes
         subj_match2 = re.search(r'(?:New assignment|Due tomorrow|Due soon):\s*(.+)$', subject, re.IGNORECASE)
         if subj_match2:
             assignment_title = clean_text(subj_match2.group(1))
 
-    # 2. Extract Class Name
+    # 3. Extract Class Name
     class_name = None
-    # In plain text Classroom emails:
-    # Notification settings
-    # <url>
-    # Class Name - Grade
-    # <url>
-    # New assignment
     if plain_body:
         class_match = re.search(r'(?:Notification settings[\s\S]*?<\S+>[\r\n]+)([^\r\n<]+)[\r\n]+<\S+>[\r\n]+(?:New assignment|Due|New question|New material)', plain_body)
         if class_match:
             class_name = clean_text(class_match.group(1))
 
     if not class_name and html_body:
-        # Try finding class name from HTML table/links
         html_class_match = re.search(r'<a[^>]+href=[\'"][^\'"]*notifications\.googleapis\.com[^\'"]*[\'"][^>]*>[\s\S]*?<td[^>]*>([^<]+)</td>', html_body)
         if html_class_match:
             class_name = clean_text(html_class_match.group(1))
 
-    # 3. Extract Details Link
+    # 4. Extract Details Link
     details_link = None
     if plain_body:
         link_match = re.search(r'See details\s*[\r\n]+<(https://notifications\.googleapis\.com[^\r\n>]+|https://classroom\.google\.com[^\r\n>]+)>', plain_body)
@@ -199,19 +211,42 @@ def parse_classroom_email(msg, config, mailbox_kid=None):
             details_link = link_match.group(1).strip()
 
     if not details_link and html_body:
-        html_link_match = re.search(r'<a[^>]+href=[\'"](https://notifications\.googleapis\.com/email/redirect[^\'"]+|https://classroom\.google\.com[^\'"]+)[\'"][^>]*>\s*See details', html_body)
+        html_link_match = re.search(r'<a[^>]+href=[\'"](https://notifications\.googleapis\.com/email/redirect[^\'"]+|https://classroom\.google\.com[^\r\n>]+)[\'"][^>]*>\s*See details', html_body)
         if html_link_match:
             details_link = html_link_match.group(1).strip()
 
-    # 4. Extract Description / Instructions
+    # 5. Extract Instructions
     instructions = ""
     if plain_body:
         desc_match = re.search(r'(?:New assignment|Due tomorrow|Due soon)[\r\n]+(?:[^\r\n]+)[\r\n]+([\s\S]*?)[\r\n]+See details', plain_body)
         if desc_match:
             instructions = clean_text(desc_match.group(1))
 
+    # 6. Due Date Extraction
+    due_date = extract_due_date(assignment_title or "", reference_date=ref_date)
+    if not due_date and instructions:
+        due_date = extract_due_date(instructions, reference_date=ref_date)
+
+    # 7. Class Keyword Sentinel Matching & Discovery Mode
+    raw_title = assignment_title or subject
+    clean_title = clean_text(raw_title).strip('"\'')
+    prefix, is_discovery = match_class_prefix(class_name, clean_title, subject, kid, config)
+
+    if is_discovery:
+        formatted_title = f"[DISCOVERY ALERT] {class_name or 'Unrecognized Class'} - {clean_title}"
+        pos = "top"
+    else:
+        formatted_title = f"{prefix} {clean_title}"
+        pos = "bottom"
+
     # Build description field for Trello card
     desc_lines = []
+    if is_discovery:
+        desc_lines.append("⚠️ [DISCOVERY ALERT] This assignment came from an unrecognized class.")
+        desc_lines.append(f"Detected Class: {class_name or 'Unknown'}")
+        desc_lines.append(f"To map this subject automatically, add a keyword sentinel to config.yaml under profiles.{kid or 'Isaac/Asher'}.classes.")
+        desc_lines.append("--------------------------------------------------")
+
     if instructions:
         desc_lines.append(instructions)
     if details_link:
@@ -223,19 +258,13 @@ def parse_classroom_email(msg, config, mailbox_kid=None):
 
     full_desc = "\n".join(desc_lines)
 
-    # 5. Extract Due Date
-    # Try from assignment title first, then body instructions
-    due_date = extract_due_date(assignment_title or "", reference_date=ref_date)
-    if not due_date and instructions:
-        due_date = extract_due_date(instructions, reference_date=ref_date)
-
-    # 6. Format Final Card Title
-    formatted_title = format_card_title(class_name, assignment_title or subject, config)
-
     return {
+        "is_actionable": True,
+        "is_discovery": is_discovery,
+        "pos": pos,
         "kid": kid,
         "class_name": class_name,
-        "raw_title": assignment_title,
+        "raw_title": clean_title,
         "formatted_title": formatted_title,
         "due": due_date,
         "desc": full_desc,
