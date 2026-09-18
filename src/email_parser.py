@@ -103,6 +103,7 @@ def match_class_prefix(class_name, assignment_title, subject, kid_name, config):
     """
     Match class name and title against kid-specific keyword sentinels or global class_rules.
     If no match is found, triggers a [DISCOVERY ALERT].
+    Returns (prefix, is_discovery, class_label)
     """
     search_context = f"{class_name or ''} {assignment_title or ''} {subject or ''}".lower()
     profiles = config.get("profiles", {})
@@ -112,11 +113,12 @@ def match_class_prefix(class_name, assignment_title, subject, kid_name, config):
         kid_classes = profiles[kid_name].get("classes", [])
         for cls in kid_classes:
             prefix = cls.get("prefix")
+            class_label = cls.get("label") or cls.get("name")
             keywords = cls.get("keywords", [])
             for kw in keywords:
                 # Use word boundary or direct substring
                 if re.search(rf'\b{re.escape(kw.lower())}\b', search_context) or kw.lower() in search_context:
-                    return prefix, False
+                    return prefix, False, class_label
 
     # 2. Check global class rules
     class_rules = config.get("class_rules", [])
@@ -124,10 +126,11 @@ def match_class_prefix(class_name, assignment_title, subject, kid_name, config):
         for rule in class_rules:
             pattern = rule.get("match")
             if pattern and re.search(pattern, search_context):
-                return rule.get("prefix"), False
+                prefix = rule.get("prefix")
+                return prefix, False, (prefix or "").strip("[] ")
 
     # 3. No match found -> Trigger DISCOVERY ALERT
-    return "[DISCOVERY ALERT]", True
+    return "[DISCOVERY ALERT]", True, None
 
 def extract_due_date(text, reference_date=None):
     """Extract and normalize due dates from text."""
@@ -230,13 +233,13 @@ def parse_classroom_email(msg, config, mailbox_kid=None):
     # 7. Class Keyword Sentinel Matching & Discovery Mode
     raw_title = assignment_title or subject
     clean_title = clean_text(raw_title).strip('"\'')
-    prefix, is_discovery = match_class_prefix(class_name, clean_title, subject, kid, config)
+    prefix, is_discovery, class_label = match_class_prefix(class_name, clean_title, subject, kid, config)
 
     if is_discovery:
         formatted_title = f"[DISCOVERY ALERT] {class_name or 'Unrecognized Class'} - {clean_title}"
         pos = "top"
     else:
-        formatted_title = f"{prefix} {clean_title}"
+        formatted_title = clean_title
         pos = "bottom"
 
     # Build description field for Trello card
@@ -263,8 +266,10 @@ def parse_classroom_email(msg, config, mailbox_kid=None):
         "is_discovery": is_discovery,
         "pos": pos,
         "kid": kid,
+        "class": class_label,
         "class_name": class_name,
         "raw_title": clean_title,
+        "name": formatted_title,
         "formatted_title": formatted_title,
         "due": due_date,
         "desc": full_desc,

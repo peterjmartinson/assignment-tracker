@@ -1,12 +1,12 @@
 # System Architecture & Design Specification
 
-This document details the architectural design, daily workflows, and technical components of the **Assignment Tracker** ecosystem.
+This document details the architectural design, Sunday batch workflows, and technical components of the **Assignment Tracker** ecosystem.
 
 ---
 
 ## 1. High-Level System Architecture
 
-The Assignment Tracker bridges automated digital intake with a high-visibility physical morning routine:
+The Assignment Tracker bridges automated digital intake with a Sunday text-first editing loop and a morning physical printout:
 
 ```
  ┌────────────────────────────────────────────────────────┐
@@ -14,108 +14,62 @@ The Assignment Tracker bridges automated digital intake with a high-visibility p
  │  - Gmail IMAP Polling (Twice daily via Cron)           │
  │  - Action Allowlist Filter (Drops Announcements)       │
  │  - Class Keyword Sentinel Matching                     │
- │  - Discovery Alert System (New Classes to Top of Board)│
+ │  - Direct Ingest into Kid Lists (Isaac / Asher)        │
  └───────────────────────────┬────────────────────────────┘
                              │
                              ▼
  ┌────────────────────────────────────────────────────────┐
  │              2. State Hub (Trello Board)               │
- │  - Lists: Backlog (Radar Inbox) | To Do (Focus) | Done │
- │  - Kid Labels & Visual Cover Colors (Isaac/Asher)      │
- │  - Automated ISO-8601 Due Dates                        │
+ │  - Lists: Isaac | Asher                                │
+ │  - Subject/Class Labels: Math, French, Physics, etc.   │
+ │  - Automated ISO-8601 / Date-stamped Due Dates         │
  └─────────────┬────────────────────────────┬─────────────┘
                │                            │
-  (Read via REST API)                 (Mobile Swipe: 1s)
+  (Read via REST API)                 (CLI Pull / Push)
                ▼                            ▼
  ┌───────────────────────────┐   ┌────────────────────────┐
- │ 3. Random Task API (Vercel│   │ 5. Physical Wall Board │
- │  - Gathers Calendar Tasks │   │  - Tactile Post-its:   │
- │  - Evaluates Due Radar    │   │    Blue (Isaac)        │
- │  - Generates Daily Agenda │   │    Green (Asher)       │
- └─────────────┬─────────────┘   └──────────▲─────────────┘
-               │                            │
-               ▼                            │ (Transcribe)
- ┌───────────────────────────┐              │
- │ 4. Screamsheet Printout   │──────────────┘
+ │ 3. Random Task API        │   │ 5. Sunday Edit Loop    │
+ │  - Fetches Kid Lists      │   │  - workspace/          │
+ │  - Evaluates Due Horizon  │   │    homework.yaml       │
+ │  - Partitions Agenda      │   │  - Wipe done / add new │
+ └─────────────┬─────────────┘   └────────────────────────┘
+               │
+               ▼
+ ┌───────────────────────────┐
+ │ 4. Screamsheet Printout   │
  │  - Morning Printed Paper  │
- │  - Daily Priority Section │
- │  - "Due Soon" Alert Radar │
+ │  - Past Due & Today Focus │
+ │  - Upcoming Due Radar     │
  └───────────────────────────┘
 ```
 
 ---
 
-## 2. The "Focus + Safety Net Radar" Trello Model
+## 2. The Two-List Model & Class Labels
 
-Instead of a complex 4-column digital Kanban that duplicates physical Post-it tracking, the board uses a lean **3-list structure**:
+Instead of a multi-column digital Kanban that requires daily card-moving, the board uses a lean **two-list structure**:
 
-### Board Lists:
-1. **`Backlog` (The Automated Radar Inbox):**
-   * Every incoming school assignment from Gmail is automatically created here with its due date, kid label, and cover color.
-   * Unmatched classes land here at the **top** of the list with a `[DISCOVERY ALERT]` tag.
-2. **`To Do` (Curated Focus):**
-   * You manually move 3–5 top-priority assignments here for the week/day.
-   * This list directly mirrors the physical Post-it notes on the wall.
-3. **`Done` (Completed):**
-   * When an assignment is finished, swipe the card here (1 second on mobile).
-   * Once in `Done`, it is permanently filtered out from morning Screamsheet printouts.
+### Board Structure:
+1. **`Isaac` (List):** All active assignments for Isaac.
+2. **`Asher` (List):** All active assignments for Asher.
+3. **Class Labels:** Trello labels represent subjects/classes (`Math`, `French`, `Physics`, `Art History`, `Reading`, `Latin`).
+4. **Due Dates:** The primary attribute used downstream to bucket items into Past Due, Today, and Upcoming.
 
 ---
 
-## 3. Screamsheet Morning Radar Integration
+## 3. Sunday Batch Loop (`workspace/homework.yaml`)
 
-The downstream **Random Task API** (running on Vercel) aggregates tasks for the morning **Screamsheet** printout using two complementary rules:
-
-1. **Curated Focus Tasks:**
-   * Prints all cards currently residing in the **`To Do`** list (matching your physical wall).
-2. **Automated "Due Soon" Safety Net:**
-   * Scans cards in **`Backlog`** with upcoming due dates ($\le 3$ days) or past-due dates.
-   * Promotes them to an **"⚠️ Due Soon / Alert"** section on the morning paper.
-   * **Result:** You never miss a surprise Friday assignment from a teacher even if you didn't manually triage `Backlog`.
+* **Pull (`python main.py pull`):** Downloads active cards from Trello, backs up the previous file to `workspace/backups/`, and generates clean, human-readable YAML.
+* **Edit:** Batch-edit in your code editor. Delete finished items, add new items without an `id:`, and adjust due dates.
+* **Validate (`python main.py validate`):** Validates YAML syntax, required fields, and date formats.
+* **Push (`python main.py push`):** Syncs changes to Trello, creates new cards with labels, updates modified cards, and automatically archives cards removed from YAML.
 
 ---
 
-## 4. Inclusion-First (Allowlist) Filtering & Discovery Mode
+## 4. Screamsheet Morning Radar Integration
 
-To protect the board from chatter, newsletters, and grading notices, the ingestion pipeline enforces a 3-stage inclusion filter:
+The downstream **Random Task API** (running on Vercel) aggregates tasks for the morning **Screamsheet** printout:
 
-```
- Incoming Forwarded Email
-           │
-           ▼
- ┌────────────────────────────────────────┐
- │  Stage 1: Action Type Allowlist        │  Only allow: "New assignment", "Due tomorrow",
- │  (Drops announcements & chatter)       │  "Due soon", "New question"
- └───────────────────┬────────────────────┘
-                     │  Pass
-                     ▼
- ┌────────────────────────────────────────┐
- │  Stage 2: Class Keyword Sentinels      │  Per kid in config.yaml:
- │  (Matches enrolled subject keywords)   │  Isaac: [Math, French, Art History, Eng Lit]
- └───────────────────┬────────────────────┘  Asher: [Math, Art History, Reading]
-                     │
-         ┌───────────┴───────────┐
-         │ Match?                │
-    YES  ▼                  NO   ▼
- ┌──────────────────────┐  ┌───────────────────────────────────┐
- │ Format Clean Title:  │  │ Discovery Alert Card:             │
- │ e.g. [Art History]   │  │ '[DISCOVERY ALERT] Class - Title' │
- │ Placed in Backlog    │  │ Created at TOP of Backlog         │
- └──────────────────────┘  └───────────────────────────────────┘
-```
-
-### Discovery Mode Details:
-* When a teacher introduces a brand new subject (e.g. *Latin* or *Science Lab*) that is not yet configured with keyword sentinels in `config.yaml`:
-  * The system **still creates the card** so it is never lost.
-  * It tags the card with **`[DISCOVERY ALERT]`** and sets `pos="top"` to pin it to the top of the Trello Backlog.
-  * You see the alert on Trello, add the sentinel keyword to `config.yaml`, and future assignments format cleanly.
-
----
-
-## 5. Summary of Daily Roles
-
-* **Basement Server:** Automatically ingests emails, filters noise, checks duplicates, and keeps Trello Backlog populated.
-* **Vercel (`random-task`):** Pulls from Trello (`To Do` + `Backlog` Due Soon radar) and delivers your morning agenda to Screamsheet.
-* **Parent:** 
-  * Morning: Compare Screamsheet with physical wall Post-it notes.
-  * Evening: Swipe completed cards to `Done` on Trello mobile app (1 swipe).
+1. **Past Due / Due Today:** Primary focus section on the morning paper.
+2. **Due Soon Radar:** Scans tasks due within 3 days.
+3. **Sections:** Partitioned by Kid (`Isaac` and `Asher`) or due horizon.

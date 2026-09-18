@@ -1,3 +1,4 @@
+Asher:
 - id: 6a39c61348dcccada90ed070
   name: '[BAO 1:5] More Subtraction'
   kid: Asher
@@ -61,23 +62,9 @@
   desc: 'BA 1, Ch 10
 
     https://enrichment.beastclassroom.com/school/classroom/1/10/1583/1'
-- id: 6a962de799c6e8bac18616a4
-  name: "[Assignment] Fwd: New announcement: \"Dear MLCA Parents, I hope that summer\u2026"
-  kid: Isaac
-  list: Backlog
-  due: null
-  cover: null
-  desc: ''
-- id: 6a962de81b0e70e0bfa214af
-  name: '[French] Test - Histoire d''une Revanche'
-  kid: Isaac
-  list: Backlog
-  due: null
-  cover: blue
-  desc: 'Class: French Fifth Grade 5th'
 - id: 6a962dea53be96e1d243d6b4
-  name: "[Notification settings] Fwd: New announcement: \"Dear MLCA Parents, I hope\
-    \ that summer\u2026"
+  name: '[Notification settings] Fwd: New announcement: "Dear MLCA Parents, I hope
+    that summer…'
   kid: Asher
   list: Backlog
   due: null
@@ -111,38 +98,6 @@
   due: null
   cover: green
   desc: ''
-- id: 6a39c185d1f0974b759d8c69
-  name: '[BAO 5:9] Decimals and Whole Numbers'
-  kid: Isaac
-  list: To Do
-  due: null
-  cover: blue
-  desc: 'BA 5, Ch 9
-
-    https://enrichment.beastclassroom.com/school/classroom/5/9/943/1'
-- id: 6a39c1855e75861fc31ac8e1
-  name: '[BAO 5:9] Dividing Decimals'
-  kid: Isaac
-  list: To Do
-  due: null
-  cover: blue
-  desc: 'BA 5, Ch 9
-
-    https://enrichment.beastclassroom.com/school/classroom/5/9/953/1'
-- id: 6a92d062f0e261f5365d9115
-  name: French Page
-  kid: Isaac
-  list: To Do
-  due: null
-  cover: blue
-  desc: ''
-- id: 6a92d067f0e261f5365d95d0
-  name: Read 15 minutes
-  kid: Isaac
-  list: To Do
-  due: null
-  cover: blue
-  desc: ''
 - id: 6a39c6154f95d320507414d8
   name: '[BAO 1:7] Distance 1'
   kid: Asher
@@ -152,24 +107,6 @@
   desc: 'BA 1, Ch 7
 
     https://enrichment.beastclassroom.com/school/classroom/1/7/1535/1'
-- id: 6a39c184e40fc0660566f7b5
-  name: '[BAO 5:6] Multiplying Mixed Numbers'
-  kid: Isaac
-  list: Done
-  due: null
-  cover: blue
-  desc: 'BA 5, Ch 6
-
-    https://enrichment.beastclassroom.com/school/classroom/5/6/805/1'
-- id: 6a39c184c04bc0e142094597
-  name: '[BAO 5:6] Different Denominators 2'
-  kid: Isaac
-  list: Done
-  due: null
-  cover: blue
-  desc: 'BA 5, Ch 6
-
-    https://enrichment.beastclassroom.com/school/classroom/5/6/794/1'
 - id: 6a92cfa990296334e16515e5
   name: '[BAO 1:4] Making 20'
   kid: Asher
@@ -177,15 +114,6 @@
   due: null
   cover: green
   desc: ''
-- id: 6a39c183823d67ec6cb4df37
-  name: '[BAO 5:3] Multi-Step Equations 2'
-  kid: Isaac
-  list: Done
-  due: null
-  cover: blue
-  desc: 'BA 5, Ch 3
-
-    https://enrichment.beastclassroom.com/school/classroom/5/3/733/1'
 - id: 6a39c6147858c8d584579004
   name: '[BAO 1:7] Counting'
   kid: Asher
@@ -220,6 +148,130 @@
   due: null
   cover: green
   desc: Complete pages 1 and 2 from the printed 2015 Math Kangaroo PDF.
+- id: 6a39c614775755c22abd260f
+  name: '[BAO 1:7] Addition Strategies'
+  kid: Asher
+  list: Done
+  due: null
+  cover: green
+  desc: 'BA 1, Ch 7
+
+    https://enrichment.beastclassroom.com/school/classroom/1/7/1526/1'
+- id: 6a39c6111beea6bbe92942a7
+  name: '[Math] Order'
+  kid: Asher
+  list: Done
+  due: null
+  cover: green
+  desc: 'BA 1, Ch 4
+
+    https://enrichment.beastclassroom.com/school/classroom/1/4/1413/1'
+- id: 6a39c6120063cc05e9fd3950
+  name: '[Math] Making 20'
+  kid: Asher
+  list: Done
+  due: null
+  cover: green
+  desc: 'BA 1, Ch 4
+
+    https://enrichment.beastclassroom.com/school/classroom/1/4/1453/1'
+- id: 6a10f550fcbe44f1abefcd04
+  name: '[Art History] Google Classroom'
+  kid: Asher
+  list: Done
+  due: null
+  cover: green
+  desc: Google Classroom Assignment
+- id: 6a10f550f7fd6b74c79b9830
+  name: '[Math] BA to Page 30'
+  kid: Asher
+  list: Done
+  due: null
+  cover: green
+  desc: BA to Page 30
+- id: 6a39c612fd74b24c3588d550
+  name: '[Math] Counting Up (Ch 4)'
+  kid: Asher
+  list: Done
+  due: null
+  cover: green
+  desc: 'BA 1, Ch 4
+
+    https://enrichment.beastclassroom.com/school/classroom/1/4/1489/1'
+Isaac:
+- id: 6a962de799c6e8bac18616a4
+  name: '[Assignment] Fwd: New announcement: "Dear MLCA Parents, I hope that summer…'
+  kid: Isaac
+  list: Backlog
+  due: null
+  cover: null
+  desc: ''
+- id: 6a962de81b0e70e0bfa214af
+  name: '[French] Test - Histoire d''une Revanche'
+  kid: Isaac
+  list: Backlog
+  due: null
+  cover: blue
+  desc: 'Class: French Fifth Grade 5th'
+- id: 6a39c185d1f0974b759d8c69
+  name: '[BAO 5:9] Decimals and Whole Numbers'
+  kid: Isaac
+  list: To Do
+  due: null
+  cover: blue
+  desc: 'BA 5, Ch 9
+
+    https://enrichment.beastclassroom.com/school/classroom/5/9/943/1'
+- id: 6a39c1855e75861fc31ac8e1
+  name: '[BAO 5:9] Dividing Decimals'
+  kid: Isaac
+  list: To Do
+  due: null
+  cover: blue
+  desc: 'BA 5, Ch 9
+
+    https://enrichment.beastclassroom.com/school/classroom/5/9/953/1'
+- id: 6a92d062f0e261f5365d9115
+  name: French Page
+  kid: Isaac
+  list: To Do
+  due: null
+  cover: blue
+  desc: ''
+- id: 6a92d067f0e261f5365d95d0
+  name: Read 15 minutes
+  kid: Isaac
+  list: To Do
+  due: null
+  cover: blue
+  desc: ''
+- id: 6a39c184e40fc0660566f7b5
+  name: '[BAO 5:6] Multiplying Mixed Numbers'
+  kid: Isaac
+  list: Done
+  due: null
+  cover: blue
+  desc: 'BA 5, Ch 6
+
+    https://enrichment.beastclassroom.com/school/classroom/5/6/805/1'
+- id: 6a39c184c04bc0e142094597
+  name: '[BAO 5:6] Different Denominators 2'
+  kid: Isaac
+  list: Done
+  due: null
+  cover: blue
+  desc: 'BA 5, Ch 6
+
+    https://enrichment.beastclassroom.com/school/classroom/5/6/794/1'
+- id: 6a39c183823d67ec6cb4df37
+  name: '[BAO 5:3] Multi-Step Equations 2'
+  kid: Isaac
+  list: Done
+  due: null
+  cover: blue
+  desc: 'BA 5, Ch 3
+
+    https://enrichment.beastclassroom.com/school/classroom/5/3/733/1'
 - id: 6a39c18014eb55f8003203c2
   name: '[Math] Long Multiplication HTUxTU'
   kid: Isaac
@@ -263,15 +315,6 @@
   desc: 'BA 5, Ch 2
 
     https://enrichment.beastclassroom.com/school/classroom/5/2/684/1'
-- id: 6a39c614775755c22abd260f
-  name: '[BAO 1:7] Addition Strategies'
-  kid: Asher
-  list: Done
-  due: null
-  cover: green
-  desc: 'BA 1, Ch 7
-
-    https://enrichment.beastclassroom.com/school/classroom/1/7/1526/1'
 - id: 6a39c182201badec35226b85
   name: '[Math] Integer Division 2'
   kid: Isaac
@@ -295,31 +338,6 @@
   due: null
   cover: blue
   desc: Study for TEST
-- id: 6a39c6111beea6bbe92942a7
-  name: '[Math] Order'
-  kid: Asher
-  list: Done
-  due: null
-  cover: green
-  desc: 'BA 1, Ch 4
-
-    https://enrichment.beastclassroom.com/school/classroom/1/4/1413/1'
-- id: 6a39c6120063cc05e9fd3950
-  name: '[Math] Making 20'
-  kid: Asher
-  list: Done
-  due: null
-  cover: green
-  desc: 'BA 1, Ch 4
-
-    https://enrichment.beastclassroom.com/school/classroom/1/4/1453/1'
-- id: 6a10f550fcbe44f1abefcd04
-  name: '[Art History] Google Classroom'
-  kid: Asher
-  list: Done
-  due: null
-  cover: green
-  desc: Google Classroom Assignment
 - id: 6a1a0c226b9af8ca8e3b74cd
   name: '[French] Read Monte Cristo'
   kid: null
@@ -376,13 +394,6 @@
   due: null
   cover: blue
   desc: Study for French Vocabulary QUIZ
-- id: 6a10f550f7fd6b74c79b9830
-  name: '[Math] BA to Page 30'
-  kid: Asher
-  list: Done
-  due: null
-  cover: green
-  desc: BA to Page 30
 - id: 6a124ded718c212eb819e008
   name: '[French] Vocab QUIZ 25'
   kid: Isaac
@@ -390,12 +401,3 @@
   due: null
   cover: blue
   desc: Study for French Vocabulary QUIZ
-- id: 6a39c612fd74b24c3588d550
-  name: '[Math] Counting Up (Ch 4)'
-  kid: Asher
-  list: Done
-  due: null
-  cover: green
-  desc: 'BA 1, Ch 4
-
-    https://enrichment.beastclassroom.com/school/classroom/1/4/1489/1'

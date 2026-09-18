@@ -1,12 +1,9 @@
 board_id: "6a0dd7e64e205c4e01db1b21"
-ingest_list: "Backlog"
 
-# Map human-readable names to Trello IDs
+# Map kid names to Trello List IDs
 lists:
-  "To Do": "6a0dd7fc14b166b8906b1202"
-  "Doing": "6a0dd8027d3bffa03d62e7c4"
-  "Done": "6a0dd80766d43b59369e7eeb"
-  "Backlog": "6a0dd7f189ae4d6d94e4332e"
+  Isaac: "6a0dd7fc14b166b8906b1202"
+  Asher: "6a0dd7f189ae4d6d94e4332e"
 
 # Gmail IMAP Configuration for automated server polling
 gmail:
@@ -26,42 +23,44 @@ allowed_actions:
 # Pre-defined profiles for your boys with class keyword sentinels
 profiles:
   Isaac:
-    label_id: "6a0dd7e769a7a10ca5f5ced0"
-    cover_color: "blue"
     gmail_label: "Classroom/Isaac"
     email_patterns:
       - "isaac.martinson@mainlineclassical.org"
       - "isaac"
     classes:
       - name: "Math"
-        prefix: "[Math]"
+        label: "Math"
         keywords: ["math", "beast", "bao", "alcumus", "arithmetic", "algebra", "fractions", "division", "multiplication"]
       - name: "French"
-        prefix: "[French]"
+        label: "French"
         keywords: ["french", "français", "vocab", "revanche", "monte cristo"]
+      - name: "Physics"
+        label: "Physics"
+        keywords: ["physics", "science", "lab", "experiment"]
       - name: "Art History"
-        prefix: "[Art History]"
+        label: "Art History"
         keywords: ["art history", "art"]
       - name: "English Literature"
-        prefix: "[Eng Lit]"
+        label: "Eng Lit"
         keywords: ["eng lit", "english", "literature", "essay", "draft", "reading", "ch."]
+      - name: "Latin"
+        label: "Latin"
+        keywords: ["latin", "lingua"]
 
   Asher:
-    label_id: "6a0dd7e67d3bffa03d62a17a"
-    cover_color: "green"
     gmail_label: "Classroom/Asher"
     email_patterns:
       - "asher.martinson@mainlineclassical.org"
       - "asher"
     classes:
       - name: "Math"
-        prefix: "[Math]"
+        label: "Math"
         keywords: ["math", "beast", "bao", "kangaroo", "greg tang", "addition", "subtraction", "counting", "number line", "grouping"]
       - name: "Art History"
-        prefix: "[Art History]"
+        label: "Art History"
         keywords: ["art history", "art"]
       - name: "Reading"
-        prefix: "[Reading]"
+        label: "Reading"
         keywords: ["reading", "read", "phonics", "english"]
 
 # Global fallback formatting rules (used if general keyword matches)
@@ -70,6 +69,8 @@ class_rules:
     prefix: "[Art History]"
   - match: "(?i)french"
     prefix: "[French]"
+  - match: "(?i)physics|science"
+    prefix: "[Physics]"
   - match: "(?i)beast\\s*academy|bao"
     prefix: "[BAO]"
   - match: "(?i)math|arithmetic"
