@@ -20,62 +20,237 @@ allowed_actions:
   - "Due soon"
   - "New question"
 
-# Pre-defined profiles for your boys with class keyword sentinels
+# Kid profile definitions for incoming email routing
 profiles:
   Isaac:
     gmail_label: "Classroom/Isaac"
     email_patterns:
       - "isaac.martinson@mainlineclassical.org"
       - "isaac"
-    classes:
-      - name: "Math"
-        label: "Math"
-        keywords: ["math", "beast", "bao", "alcumus", "arithmetic", "algebra", "fractions", "division", "multiplication"]
-      - name: "French"
-        label: "French"
-        keywords: ["french", "français", "vocab", "revanche", "monte cristo"]
-      - name: "Physics"
-        label: "Physics"
-        keywords: ["physics", "science", "lab", "experiment"]
-      - name: "Art History"
-        label: "Art History"
-        keywords: ["art history", "art"]
-      - name: "English Literature"
-        label: "Eng Lit"
-        keywords: ["eng lit", "english", "literature", "essay", "draft", "reading", "ch."]
-      - name: "Latin"
-        label: "Latin"
-        keywords: ["latin", "lingua"]
 
   Asher:
     gmail_label: "Classroom/Asher"
     email_patterns:
       - "asher.martinson@mainlineclassical.org"
       - "asher"
-    classes:
-      - name: "Math"
-        label: "Math"
-        keywords: ["math", "beast", "bao", "kangaroo", "greg tang", "addition", "subtraction", "counting", "number line", "grouping"]
-      - name: "Art History"
-        label: "Art History"
-        keywords: ["art history", "art"]
-      - name: "Reading"
-        label: "Reading"
-        keywords: ["reading", "read", "phonics", "english"]
 
-# Global fallback formatting rules (used if general keyword matches)
+# Unified, distinct classes and keyword sentinels (shared across all kids)
+# Note: More specific subjects are listed before general ones (e.g. Art History before Art)
+classes:
+  - name: "Art History"
+    prefix: "[Art History]"
+    keywords:
+      - "art history"
+      - "history of art"
+
+  - name: "Art"
+    prefix: "[Art]"
+    keywords:
+      - "art"
+      - "drawing"
+      - "sketching"
+      - "painting"
+      - "sculpture"
+      - "studio art"
+
+  - name: "Math Competition"
+    prefix: "[Math Comp]"
+    keywords:
+      - "math competition"
+      - "math comp"
+      - "kangaroo"
+      - "moems"
+      - "amc 8"
+      - "amc 10"
+      - "mathcounts"
+
+  - name: "Math"
+    prefix: "[Math]"
+    keywords:
+      - "math"
+      - "beast academy"
+      - "beast"
+      - "bao"
+      - "alcumus"
+      - "arithmetic"
+      - "algebra"
+      - "fractions"
+      - "geometry"
+      - "division"
+      - "multiplication"
+      - "addition"
+      - "subtraction"
+      - "counting"
+      - "number line"
+      - "grouping"
+      - "greg tang"
+
+  - name: "English Literature"
+    prefix: "[Eng Lit]"
+    keywords:
+      - "english literature"
+      - "eng lit"
+      - "literature"
+      - "novel"
+      - "poetry"
+      - "poem"
+      - "essay"
+      - "reading"
+      - "read"
+      - "chapter"
+      - "ch."
+
+  - name: "English Language"
+    prefix: "[Eng Lang]"
+    keywords:
+      - "english language"
+      - "eng lang"
+      - "grammar"
+      - "vocab"
+      - "vocabulary"
+      - "spelling"
+      - "phonics"
+      - "writing"
+      - "composition"
+      - "mechanics"
+      - "punctuation"
+
+  - name: "French"
+    prefix: "[French]"
+    keywords:
+      - "french"
+      - "français"
+      - "francais"
+      - "revanche"
+      - "monte cristo"
+      - "vocabulaire"
+
+  - name: "Latin"
+    prefix: "[Latin]"
+    keywords:
+      - "latin"
+      - "lingua"
+      - "latina"
+      - "declension"
+      - "conjugation"
+
+  - name: "Hebrew"
+    prefix: "[Hebrew]"
+    keywords:
+      - "hebrew"
+      - "ivrit"
+      - "alef"
+      - "bet"
+      - "torah"
+
+  - name: "History"
+    prefix: "[History]"
+    keywords:
+      - "history"
+      - "ancient"
+      - "civilization"
+      - "rome"
+      - "greece"
+      - "egypt"
+      - "middle ages"
+      - "renaissance"
+      - "revolution"
+
+  - name: "Geography"
+    prefix: "[Geography]"
+    keywords:
+      - "geography"
+      - "atlas"
+      - "map"
+      - "countries"
+      - "continents"
+      - "capitals"
+      - "terrain"
+
+  - name: "Debate"
+    prefix: "[Debate]"
+    keywords:
+      - "debate"
+      - "speech"
+      - "rebuttal"
+      - "resolution"
+      - "forensics"
+      - "argument"
+
+  - name: "Good Life"
+    prefix: "[Good Life]"
+    keywords:
+      - "good life"
+      - "ethics"
+      - "virtue"
+      - "philosophy"
+      - "moral"
+      - "character"
+
+  - name: "Hands On Skills"
+    prefix: "[Hands On]"
+    keywords:
+      - "hands on skills"
+      - "hands on"
+      - "handiwork"
+      - "woodworking"
+      - "crafting"
+      - "tools"
+      - "practical skills"
+
+  - name: "Music Theory"
+    prefix: "[Music Theory]"
+    keywords:
+      - "music theory"
+      - "music"
+      - "solfege"
+      - "rhythm"
+      - "sheet music"
+      - "notation"
+      - "choir"
+
+  - name: "Robotics"
+    prefix: "[Robotics]"
+    keywords:
+      - "robotics"
+      - "robot"
+      - "lego"
+      - "first lego"
+      - "fll"
+      - "coding"
+      - "sensors"
+
+  - name: "Science"
+    prefix: "[Science]"
+    keywords:
+      - "science"
+      - "physics"
+      - "chemistry"
+      - "biology"
+      - "earth science"
+      - "lab"
+      - "experiment"
+      - "scientific"
+
+# Global fallback regex rules
 class_rules:
   - match: "(?i)art\\s*history"
     prefix: "[Art History]"
   - match: "(?i)french"
     prefix: "[French]"
-  - match: "(?i)physics|science"
-    prefix: "[Physics]"
-  - match: "(?i)beast\\s*academy|bao"
-    prefix: "[BAO]"
-  - match: "(?i)math|arithmetic"
+  - match: "(?i)latin"
+    prefix: "[Latin]"
+  - match: "(?i)hebrew"
+    prefix: "[Hebrew]"
+  - match: "(?i)physics|chemistry|biology|science"
+    prefix: "[Science]"
+  - match: "(?i)beast\\s*academy|bao|math"
     prefix: "[Math]"
-  - match: "(?i)eng\\s*lit|english|literature"
+  - match: "(?i)eng\\s*lit|literature"
     prefix: "[Eng Lit]"
-  - match: "(?i)alcumus"
-    prefix: "[Alcumus]"
+  - match: "(?i)grammar|spelling|vocab"
+    prefix: "[Eng Lang]"
+  - match: "(?i)debate"
+    prefix: "[Debate]"
+  - match: "(?i)robotics"
+    prefix: "[Robotics]"

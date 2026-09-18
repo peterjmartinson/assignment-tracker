@@ -101,26 +101,35 @@ def is_actionable_notification(subject, config):
 
 def match_class_prefix(class_name, assignment_title, subject, kid_name, config):
     """
-    Match class name and title against kid-specific keyword sentinels or global class_rules.
+    Match class name and title against global classes, kid-specific sentinels, or class_rules.
     If no match is found, triggers a [DISCOVERY ALERT].
     Returns (prefix, is_discovery, class_label)
     """
     search_context = f"{class_name or ''} {assignment_title or ''} {subject or ''}".lower()
-    profiles = config.get("profiles", {})
 
-    # 1. Check kid-specific class keyword sentinels
+    # 1. Check global unified classes list (in order of definition)
+    global_classes = config.get("classes", [])
+    for cls in global_classes:
+        label = cls.get("name") or cls.get("label")
+        prefix = cls.get("prefix", f"[{label}]")
+        keywords = cls.get("keywords", [])
+        for kw in keywords:
+            if re.search(rf'\b{re.escape(kw.lower())}\b', search_context) or kw.lower() in search_context:
+                return prefix, False, label
+
+    # 2. Check kid-specific class keyword sentinels (if configured)
+    profiles = config.get("profiles", {})
     if kid_name and kid_name in profiles:
         kid_classes = profiles[kid_name].get("classes", [])
         for cls in kid_classes:
-            prefix = cls.get("prefix")
-            class_label = cls.get("label") or cls.get("name")
+            label = cls.get("label") or cls.get("name")
+            prefix = cls.get("prefix", f"[{label}]")
             keywords = cls.get("keywords", [])
             for kw in keywords:
-                # Use word boundary or direct substring
                 if re.search(rf'\b{re.escape(kw.lower())}\b', search_context) or kw.lower() in search_context:
-                    return prefix, False, class_label
+                    return prefix, False, label
 
-    # 2. Check global class rules
+    # 3. Check regex class rules
     class_rules = config.get("class_rules", [])
     if class_name:
         for rule in class_rules:
@@ -129,7 +138,7 @@ def match_class_prefix(class_name, assignment_title, subject, kid_name, config):
                 prefix = rule.get("prefix")
                 return prefix, False, (prefix or "").strip("[] ")
 
-    # 3. No match found -> Trigger DISCOVERY ALERT
+    # 4. No match found -> Trigger DISCOVERY ALERT
     return "[DISCOVERY ALERT]", True, None
 
 def extract_due_date(text, reference_date=None):
