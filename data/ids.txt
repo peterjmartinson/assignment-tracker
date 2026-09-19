@@ -1,0 +1,30 @@
+Art
+Art History
+Debate
+English Language
+English Literature
+French
+Geography
+Good Life
+Hands On Skills
+Hebrew
+History
+Latin
+Math
+Math Competition
+Music Theory
+Robotics
+Science
+
+                "list": {
+                    "id": "6aadba784431fba8472396f0",
+                    "name": "Isaac"
+                }
+                "list": {
+                    "id": "6aadba75f7abaaaf39a7d2c6",
+                    "name": "Asher"
+                }
+                "list": {
+                    "id": "6a0dd80766d43b59369e7eeb",
+                    "name": "Done"
+                }

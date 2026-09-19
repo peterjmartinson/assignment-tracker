@@ -2,12 +2,12 @@ import os
 import sys
 from src.trello_utils import (
     load_config,
-    load_homework,
     save_homework,
     get_credentials,
     fetch_active_cards,
     create_trello_card,
-    find_duplicate_card
+    find_duplicate_card,
+    WORKSPACE_FILE
 )
 from src.email_parser import parse_classroom_email, parse_eml_file
 from src.gmail_client import GmailIMAPClient
@@ -29,13 +29,14 @@ def ingest_from_eml_file(file_path, dry_run=False):
         print(f"\n[FILTER] Non-actionable notification type (Subject: '{parsed.get('subject')}'). Skipping card creation.")
         return {"status": "filtered", "reason": "non_actionable"}
 
+    kid_target = parsed.get('kid') or 'Isaac'
     if parsed.get("is_discovery"):
-        print(f"\n⚠️ [DISCOVERY ALERT] Unrecognized class detected: '{parsed.get('class_name') or 'Unknown'}'. Card will be created at TOP of Backlog.")
+        print(f"\n⚠️ [DISCOVERY ALERT] Unrecognized class detected: '{parsed.get('class_name') or 'Unknown'}'. Card will be created at TOP of {kid_target}'s list.")
 
     print(f"\nParsed Assignment:")
-    print(f"  Kid:       {parsed.get('kid') or 'Unknown'}")
-    print(f"  Class:     {parsed.get('class_name') or 'Unknown'}")
-    print(f"  Title:     {parsed['formatted_title']}")
+    print(f"  Kid:       {kid_target}")
+    print(f"  Class:     {parsed.get('class') or parsed.get('class_name') or 'None'}")
+    print(f"  Title:     {parsed.get('name') or parsed.get('formatted_title')}")
     print(f"  Due:       {parsed.get('due') or 'None'}")
     print(f"  Position:  {parsed.get('pos', 'bottom')}")
     print(f"  MsgId:     {parsed.get('message_id') or 'None'}")
@@ -49,27 +50,27 @@ def ingest_from_eml_file(file_path, dry_run=False):
     duplicate = find_duplicate_card(parsed, active_cards)
 
     if duplicate:
-        print(f"\n[SKIP] Duplicate card found on Trello: '{duplicate['name']}' in list '{duplicate['list']}'")
+        print(f"\n[SKIP] Duplicate card found on Trello: '{duplicate['name']}' in {kid_target}'s list")
         return {"status": "skipped", "reason": "duplicate", "card": duplicate}
 
     if dry_run:
-        print(f"\n[DRY RUN] Would create Trello card: '{parsed['formatted_title']}' in Backlog (pos: {parsed.get('pos', 'bottom')})")
+        print(f"\n[DRY RUN] Would create Trello card: '{parsed.get('name')}' in {kid_target}'s list (pos: {parsed.get('pos', 'bottom')})")
         return {"status": "dry-run", "card": parsed}
 
     created = create_trello_card(parsed, config, api_key, api_token, dry_run=False)
-    print(f"\n[SUCCESS] Created Trello card: '{parsed['formatted_title']}' (ID: {created.get('id')})")
+    print(f"\n[SUCCESS] Created Trello card: '{parsed.get('name')}' (ID: {created.get('id')})")
 
     if msg_id:
         tracker.mark_processed(msg_id, {
-            "title": parsed["formatted_title"],
-            "kid": parsed.get("kid"),
+            "title": parsed.get("name") or parsed.get("formatted_title"),
+            "kid": kid_target,
             "card_id": created.get("id")
         })
 
-    # Update local homework.yaml
+    # Update local workspace
     cards = fetch_active_cards(config, api_key, api_token)
     save_homework(cards)
-    print("Updated homework.yaml with latest board state.")
+    print(f"Updated {WORKSPACE_FILE} with latest board state.")
 
     return {"status": "created", "card": created}
 
@@ -87,7 +88,6 @@ def ingest_from_gmail(dry_run=False, label_filter=None):
 
     profiles = config.get("profiles", {})
 
-    # Determine which folders/labels to scan
     mailboxes_to_scan = []
     if label_filter:
         mailboxes_to_scan.append({"folder": label_filter, "kid": None})
@@ -146,6 +146,7 @@ def ingest_from_gmail(dry_run=False, label_filter=None):
 
                 msg_id = parsed.get("message_id")
                 subject = parsed.get("subject") or ""
+                kid_target = parsed.get("kid") or mailbox_kid or "Isaac"
 
                 # 1. Check Action Filter (e.g. Announcements)
                 if not parsed.get("is_actionable", True):
@@ -159,11 +160,12 @@ def ingest_from_gmail(dry_run=False, label_filter=None):
 
                 # 2. Log Discovery Alert if applicable
                 if parsed.get("is_discovery"):
-                    print(f"\n  ⚠️ [DISCOVERY ALERT] Unrecognized class: '{parsed.get('class_name')}' for {parsed.get('kid') or 'Unknown'}")
+                    print(f"\n  ⚠️ [DISCOVERY ALERT] Unrecognized class: '{parsed.get('class_name')}' for {kid_target}")
                     stats["discovery_alerts"] += 1
 
+                title_to_create = parsed.get("name") or parsed.get("formatted_title")
                 print(f"\n  Processing: '{subject}'")
-                print(f"    Target:    {parsed['formatted_title']} (Kid: {parsed.get('kid') or 'Unknown'})")
+                print(f"    Target:    {title_to_create} (Kid: {kid_target}, Class: {parsed.get('class') or 'None'})")
                 print(f"    Due:       {parsed.get('due') or 'None'}")
                 print(f"    Position:  {parsed.get('pos', 'bottom')}")
 
@@ -178,38 +180,37 @@ def ingest_from_gmail(dry_run=False, label_filter=None):
                 # 4. Check Trello Duplicates
                 duplicate = find_duplicate_card(parsed, active_cards)
                 if duplicate:
-                    print(f"    [SKIP] Card already exists on Trello: '{duplicate['name']}' in '{duplicate['list']}'")
+                    print(f"    [SKIP] Card already exists on Trello: '{duplicate['name']}'")
                     stats["skipped_duplicate"] += 1
                     if msg_id and not dry_run:
-                        tracker.mark_processed(msg_id, {"title": parsed["formatted_title"], "status": "duplicate_on_board"})
+                        tracker.mark_processed(msg_id, {"title": title_to_create, "status": "duplicate_on_board"})
                     if not dry_run and mark_as_read:
                         client.mark_as_read(uid, folder_name)
                     continue
 
                 # 5. Create Trello Card
                 if dry_run:
-                    print(f"    [DRY RUN] Would create card: '{parsed['formatted_title']}' in Backlog (pos: {parsed.get('pos', 'bottom')})")
+                    print(f"    [DRY RUN] Would create card: '{title_to_create}' in {kid_target}'s list (pos: {parsed.get('pos', 'bottom')})")
                     stats["created"] += 1
                 else:
                     try:
                         created = create_trello_card(parsed, config, api_key, api_token, dry_run=False)
-                        print(f"    [SUCCESS] Created card '{parsed['formatted_title']}' (ID: {created.get('id')})")
+                        print(f"    [SUCCESS] Created card '{title_to_create}' (ID: {created.get('id')})")
                         stats["created"] += 1
 
                         # Append to in-memory active_cards to prevent duplicate creation in same run
-                        active_cards.append({
+                        active_cards.setdefault(kid_target, []).append({
                             "id": created.get("id"),
-                            "name": parsed["formatted_title"],
-                            "kid": parsed.get("kid"),
-                            "list": config.get("ingest_list", "Backlog"),
+                            "name": title_to_create,
+                            "class": parsed.get("class"),
                             "due": parsed.get("due"),
                             "desc": parsed.get("desc", "")
                         })
 
                         if msg_id:
                             tracker.mark_processed(msg_id, {
-                                "title": parsed["formatted_title"],
-                                "kid": parsed.get("kid"),
+                                "title": title_to_create,
+                                "kid": kid_target,
                                 "card_id": created.get("id"),
                                 "is_discovery": parsed.get("is_discovery", False)
                             })
@@ -239,4 +240,4 @@ def ingest_from_gmail(dry_run=False, label_filter=None):
     if not dry_run and stats["created"] > 0:
         cards = fetch_active_cards(config, api_key, api_token)
         save_homework(cards)
-        print("Updated homework.yaml with latest cards.")
+        print(f"Updated {WORKSPACE_FILE} with latest cards.")

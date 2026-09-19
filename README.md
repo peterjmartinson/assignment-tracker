@@ -1,105 +1,118 @@
-# Trello Homework Tracker
+# 📚 Homework Tracker: Weekly Sunday Routine
 
-A lightweight, "infrastructure-as-text" pipeline for managing Trello cards in bulk. This tool allows you to pull a Trello board down to a clean YAML file, make bulk edits (or create new cards) using your text editor, and push the state back to Trello.
+A simple text-first system for managing your boys' weekly homework on Trello without touching the Trello UI.
 
-Built to quickly ingest and organize weekly homework assignments without having to click through the Trello UI.
+---
 
-## Prerequisites
+## ⚡ The Quick Sunday Routine (TL;DR)
 
-- Python 3.x
-- A Trello account and [Developer API Keys](https://trello.com/app-key)
-
-## Installation & Setup
-
-1. **Clone and install dependencies:**
+1. **Pull the latest cards from Trello down to your machine:**
    ```bash
-   pip install requests pyyaml python-dotenv
+   uv run pull
    ```
-
-2. **Configure Secrets:**
-   Create a `.env` file in the root directory (this file is git-ignored) and add your Trello credentials:
-   ```env
-   TRELLO_API_KEY="your_api_key_here"
-   TRELLO_API_TOKEN="your_api_token_here"
+2. **Open `workspace/homework.yaml` in your editor and edit it:**
+   * **Finished an assignment?** Just highlight the lines and **delete** them.
+   * **Adding a new assignment?** Type a new block **without** an `id:` line.
+   * **Adjusting a date or note?** Edit `due:` or `desc:`.
+3. **Validate & Preview your changes (optional but recommended):**
+   ```bash
+   uv run push --dry-run
    ```
-
-3. **Configure Board Architecture:**
-   Update `config.yaml` with your specific Trello IDs. 
-   *(Tip: You can find your Board and List IDs by adding `.json` to the end of your Trello board URL and searching the raw output.)*
-   ```yaml
-   board_id: "YOUR_BOARD_ID"
-
-   lists:
-     "To Do": "64abcdef1234567890abcdef"
-     "In Progress": "64bbcdef1234567890abcdef"
-     "Done": "64cbcdef1234567890abcdef"
+4. **Push your changes back up to Trello:**
+   ```bash
+   uv run push
    ```
+   *(This creates new cards on Trello, updates modified ones, and **automatically archives** anything you deleted from the YAML).*
 
-## The Workflow
+---
 
-The pipeline operates in a simple Pull -> Edit -> Push loop.
+## 📝 How to Edit `workspace/homework.yaml`
 
-### 1. Pull Current State
-Run the pull command to grab all active cards from the board and write them to `homework.yaml`.
-```bash
-python main.py pull
-```
-
-### 2. Edit the YAML
-Open `homework.yaml` in your editor of choice. 
-
-* **To update an existing card:** Modify properties like `list`, `due`, or `cover` (e.g., `blue` or `green`). Leave the `id` field intact so the script knows which card to update.
-* **To create a new card:** Copy an existing YAML block, **delete the `id` field**, and fill in the new assignment details. 
+The file is grouped into two simple sections: **`Isaac`** and **`Asher`**.
 
 ```yaml
-# Example of an existing card (will trigger a PUT request)
-- id: 65d1234567890abcdef12345
-  name: Math Worksheet Page 42
-  kid: Isaac
-  list: To Do
-  due: '2026-07-15T12:00:00.000Z'
-  cover: blue
-  desc: Fractions review
+Isaac:
+  # ── 1. PERSISTENT / EXISTING CARDS (Have an 'id:') ────────────────────────
+  # Leave the 'id:' alone. You can change the date, description, or title.
+  - id: "6a962de81b0e70e0bfa214af"
+    class: French
+    name: "Test - Histoire d'une Revanche"
+    due: 2026-09-22
+    desc: "Review vocabulary chapters 1-3"
 
-# Example of a new card (will trigger a POST request)
-- name: Read Chapter 4
-  kid: Asher
-  list: To Do
-  due: null
-  cover: green
-  desc: ''
-```
+  # ── 2. NEW ASSIGNMENTS (No 'id:' line) ───────────────────────────────────
+  # Just type class, name, and due date. The push command will create the card
+  # on Trello and auto-fill the 'id:' line for you.
+  - class: Math
+    name: "Alcumus: Linear Equations"
+    due: 2026-09-24
 
-### 3. Push Changes
-Preview your changes first using `--dry-run`:
-```bash
-python main.py push --dry-run
-```
+  - class: Science
+    name: "Pendulum Lab Writeup"
+    due: 2026-09-25
+    desc: "Include graph of period vs length"
 
-Sync your local YAML state back to Trello:
-```bash
-python main.py push
+Asher:
+  - id: "6a962dead3e82215b54adb2a"
+    class: Art History
+    name: "Ancient Egypt Project"
+    due: 2026-09-23
+
+  - class: Reading
+    name: "Read Chapter 4 out loud"
+    due: 2026-09-21
 ```
 
 ---
 
-## Automated Google Classroom Email Ingestion
+## 🏷️ Available Class Labels
+When adding `class: <Name>`, use any of the standard names below (case-insensitive, script matches them automatically):
 
-The tracker includes an automated pipeline to poll Gmail IMAP (or ingest `.eml` files), parse Google Classroom notifications forwarded from your boys' school accounts, and automatically create Trello cards in **Backlog** with class-specific title formatting, kid labels, and due dates.
+* `Art`
+* `Art History`
+* `Debate`
+* `English Language`
+* `English Literature`
+* `French`
+* `Geography`
+* `Good Life`
+* `Hands On Skills`
+* `Hebrew`
+* `History`
+* `Latin`
+* `Math`
+* `Math Competition`
+* `Music Theory`
+* `Robotics`
+* `Science`
 
-### Quick Commands:
-* **Preview Ingestion (Dry Run):**
-  ```bash
-  python main.py ingest-email --dry-run
-  ```
-* **Test against a single `.eml` file:**
-  ```bash
-  python main.py ingest-email --file "path/to/assignment.eml" --dry-run
-  ```
-* **Run Live Ingestion (e.g., in Cron):**
-  ```bash
-  python main.py ingest-email
-  ```
+---
 
-For complete instructions on generating a Gmail App Password, configuring Gmail filters/labels, and setting up twice-daily cron jobs on your basement server, see **[EMAIL_INGESTION.md](EMAIL_INGESTION.md)**.
+## 📅 Due Date Formats
+* **Specific date:** `2026-09-23` (defaults to end-of-day on Trello)
+* **Date with time:** `2026-09-23 17:00`
+* **No specific date:** `due: null` or just omit the line
 
+---
+
+## 🗑️ How Deleting / Wiping Works
+* When you delete an assignment from `workspace/homework.yaml` and run `python main.py push`, the script notices it's gone and **archives the card on Trello**.
+* You don't have to manually swipe or clean up Trello during the week.
+
+---
+
+## 🛡️ "Oops, I Broke Something" (Safety & Backups)
+* **Pre-push preview:** Run `python main.py push --dry-run` to see a clean summary of what will be created, updated, and archived before touching Trello.
+* **Automatic Backups:** Every time you run `python main.py pull`, a timestamped snapshot of your previous `homework.yaml` is automatically saved in `workspace/backups/`. If you ever accidentally delete something, check that folder.
+
+---
+
+## ⚙️ One-Time Setup (`config.yaml`)
+Make sure your two list IDs are defined in `config.yaml`:
+```yaml
+board_id: "6a0dd7e64e205c4e01db1b21"
+
+lists:
+  Isaac: "YOUR_ISAAC_LIST_ID"
+  Asher: "YOUR_ASHER_LIST_ID"
+```

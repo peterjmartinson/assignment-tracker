@@ -1,12 +1,9 @@
 board_id: "6a0dd7e64e205c4e01db1b21"
-ingest_list: "Backlog"
 
-# Map human-readable names to Trello IDs
+# Map kid names to Trello List IDs
 lists:
-  "To Do": "6a0dd7fc14b166b8906b1202"
-  "Doing": "6a0dd8027d3bffa03d62e7c4"
-  "Done": "6a0dd80766d43b59369e7eeb"
-  "Backlog": "6a0dd7f189ae4d6d94e4332e"
+  Isaac: "6a0dd7fc14b166b8906b1202"
+  Asher: "6a0dd7f189ae4d6d94e4332e"
 
 # Gmail IMAP Configuration for automated server polling
 gmail:
@@ -23,58 +20,237 @@ allowed_actions:
   - "Due soon"
   - "New question"
 
-# Pre-defined profiles for your boys with class keyword sentinels
+# Kid profile definitions for incoming email routing
 profiles:
   Isaac:
-    label_id: "6a0dd7e769a7a10ca5f5ced0"
-    cover_color: "blue"
     gmail_label: "Classroom/Isaac"
     email_patterns:
       - "isaac.martinson@mainlineclassical.org"
       - "isaac"
-    classes:
-      - name: "Math"
-        prefix: "[Math]"
-        keywords: ["math", "beast", "bao", "alcumus", "arithmetic", "algebra", "fractions", "division", "multiplication"]
-      - name: "French"
-        prefix: "[French]"
-        keywords: ["french", "français", "vocab", "revanche", "monte cristo"]
-      - name: "Art History"
-        prefix: "[Art History]"
-        keywords: ["art history", "art"]
-      - name: "English Literature"
-        prefix: "[Eng Lit]"
-        keywords: ["eng lit", "english", "literature", "essay", "draft", "reading", "ch."]
 
   Asher:
-    label_id: "6a0dd7e67d3bffa03d62a17a"
-    cover_color: "green"
     gmail_label: "Classroom/Asher"
     email_patterns:
       - "asher.martinson@mainlineclassical.org"
       - "asher"
-    classes:
-      - name: "Math"
-        prefix: "[Math]"
-        keywords: ["math", "beast", "bao", "kangaroo", "greg tang", "addition", "subtraction", "counting", "number line", "grouping"]
-      - name: "Art History"
-        prefix: "[Art History]"
-        keywords: ["art history", "art"]
-      - name: "Reading"
-        prefix: "[Reading]"
-        keywords: ["reading", "read", "phonics", "english"]
 
-# Global fallback formatting rules (used if general keyword matches)
+# Unified, distinct classes and keyword sentinels (shared across all kids)
+# Note: More specific subjects are listed before general ones (e.g. Art History before Art)
+classes:
+  - name: "Art History"
+    prefix: "[Art History]"
+    keywords:
+      - "art history"
+      - "history of art"
+
+  - name: "Art"
+    prefix: "[Art]"
+    keywords:
+      - "art"
+      - "drawing"
+      - "sketching"
+      - "painting"
+      - "sculpture"
+      - "studio art"
+
+  - name: "Math Competition"
+    prefix: "[Math Comp]"
+    keywords:
+      - "math competition"
+      - "math comp"
+      - "kangaroo"
+      - "moems"
+      - "amc 8"
+      - "amc 10"
+      - "mathcounts"
+
+  - name: "Math"
+    prefix: "[Math]"
+    keywords:
+      - "math"
+      - "beast academy"
+      - "beast"
+      - "bao"
+      - "alcumus"
+      - "arithmetic"
+      - "algebra"
+      - "fractions"
+      - "geometry"
+      - "division"
+      - "multiplication"
+      - "addition"
+      - "subtraction"
+      - "counting"
+      - "number line"
+      - "grouping"
+      - "greg tang"
+
+  - name: "English Literature"
+    prefix: "[Eng Lit]"
+    keywords:
+      - "english literature"
+      - "eng lit"
+      - "literature"
+      - "novel"
+      - "poetry"
+      - "poem"
+      - "essay"
+      - "reading"
+      - "read"
+      - "chapter"
+      - "ch."
+
+  - name: "English Language"
+    prefix: "[Eng Lang]"
+    keywords:
+      - "english language"
+      - "eng lang"
+      - "grammar"
+      - "vocab"
+      - "vocabulary"
+      - "spelling"
+      - "phonics"
+      - "writing"
+      - "composition"
+      - "mechanics"
+      - "punctuation"
+
+  - name: "French"
+    prefix: "[French]"
+    keywords:
+      - "french"
+      - "français"
+      - "francais"
+      - "revanche"
+      - "monte cristo"
+      - "vocabulaire"
+
+  - name: "Latin"
+    prefix: "[Latin]"
+    keywords:
+      - "latin"
+      - "lingua"
+      - "latina"
+      - "declension"
+      - "conjugation"
+
+  - name: "Hebrew"
+    prefix: "[Hebrew]"
+    keywords:
+      - "hebrew"
+      - "ivrit"
+      - "alef"
+      - "bet"
+      - "torah"
+
+  - name: "History"
+    prefix: "[History]"
+    keywords:
+      - "history"
+      - "ancient"
+      - "civilization"
+      - "rome"
+      - "greece"
+      - "egypt"
+      - "middle ages"
+      - "renaissance"
+      - "revolution"
+
+  - name: "Geography"
+    prefix: "[Geography]"
+    keywords:
+      - "geography"
+      - "atlas"
+      - "map"
+      - "countries"
+      - "continents"
+      - "capitals"
+      - "terrain"
+
+  - name: "Debate"
+    prefix: "[Debate]"
+    keywords:
+      - "debate"
+      - "speech"
+      - "rebuttal"
+      - "resolution"
+      - "forensics"
+      - "argument"
+
+  - name: "Good Life"
+    prefix: "[Good Life]"
+    keywords:
+      - "good life"
+      - "ethics"
+      - "virtue"
+      - "philosophy"
+      - "moral"
+      - "character"
+
+  - name: "Hands On Skills"
+    prefix: "[Hands On]"
+    keywords:
+      - "hands on skills"
+      - "hands on"
+      - "handiwork"
+      - "woodworking"
+      - "crafting"
+      - "tools"
+      - "practical skills"
+
+  - name: "Music Theory"
+    prefix: "[Music Theory]"
+    keywords:
+      - "music theory"
+      - "music"
+      - "solfege"
+      - "rhythm"
+      - "sheet music"
+      - "notation"
+      - "choir"
+
+  - name: "Robotics"
+    prefix: "[Robotics]"
+    keywords:
+      - "robotics"
+      - "robot"
+      - "lego"
+      - "first lego"
+      - "fll"
+      - "coding"
+      - "sensors"
+
+  - name: "Science"
+    prefix: "[Science]"
+    keywords:
+      - "science"
+      - "physics"
+      - "chemistry"
+      - "biology"
+      - "earth science"
+      - "lab"
+      - "experiment"
+      - "scientific"
+
+# Global fallback regex rules
 class_rules:
   - match: "(?i)art\\s*history"
     prefix: "[Art History]"
   - match: "(?i)french"
     prefix: "[French]"
-  - match: "(?i)beast\\s*academy|bao"
-    prefix: "[BAO]"
-  - match: "(?i)math|arithmetic"
+  - match: "(?i)latin"
+    prefix: "[Latin]"
+  - match: "(?i)hebrew"
+    prefix: "[Hebrew]"
+  - match: "(?i)physics|chemistry|biology|science"
+    prefix: "[Science]"
+  - match: "(?i)beast\\s*academy|bao|math"
     prefix: "[Math]"
-  - match: "(?i)eng\\s*lit|english|literature"
+  - match: "(?i)eng\\s*lit|literature"
     prefix: "[Eng Lit]"
-  - match: "(?i)alcumus"
-    prefix: "[Alcumus]"
+  - match: "(?i)grammar|spelling|vocab"
+    prefix: "[Eng Lang]"
+  - match: "(?i)debate"
+    prefix: "[Debate]"
+  - match: "(?i)robotics"
+    prefix: "[Robotics]"

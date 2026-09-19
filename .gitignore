@@ -219,3 +219,6 @@ __marimo__/
 .env
 board.json
 .processed_emails.json
+workspace/backups/
+*_homework.json
+*.swp
