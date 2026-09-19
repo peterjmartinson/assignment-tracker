@@ -1,91 +1,118 @@
-# Trello Homework Tracker
+# 📚 Homework Tracker: Weekly Sunday Routine
 
-A lightweight, high-speed CLI sync engine for managing weekly homework on Trello via text. This tool pulls active Trello cards into a clean, human-editable YAML file (`workspace/homework.yaml`), lets you make bulk edits or add/delete cards using your code editor, validates the changes, and pushes state back to Trello with automatic deletion archiving.
-
----
-
-## 🎯 Architecture: The Two-List Model
-
-Rather than shuffling cards between Kanban columns (`To Do`, `Doing`, `Done`, `Backlog`), the board uses a streamlined **two-list structure**:
-
-* **`Isaac` (List):** All active assignments for Isaac.
-* **`Asher` (List):** All active assignments for Asher.
-* **Labels = Classes/Subjects:** (`Math`, `French`, `Physics`, `Art History`, `Latin`, `Reading`).
-* **Due Date:** Temporal anchor consumed downstream by the Screamsheet morning printout (`random-task`).
+A simple text-first system for managing your boys' weekly homework on Trello without touching the Trello UI.
 
 ---
 
-## 🚀 Weekly Workflow (Sunday Routine)
+## ⚡ The Quick Sunday Routine (TL;DR)
 
-### 1. Pull Current State
-Pulls active cards from Trello into `workspace/homework.yaml` (and creates an automated snapshot in `workspace/backups/`):
-```bash
-python main.py pull
-```
+1. **Pull the latest cards from Trello down to your machine:**
+   ```bash
+   python main.py pull
+   ```
+2. **Open `workspace/homework.yaml` in your editor and edit it:**
+   * **Finished an assignment?** Just highlight the lines and **delete** them.
+   * **Adding a new assignment?** Type a new block **without** an `id:` line.
+   * **Adjusting a date or note?** Edit `due:` or `desc:`.
+3. **Validate & Preview your changes (optional but recommended):**
+   ```bash
+   python main.py push --dry-run
+   ```
+4. **Push your changes back up to Trello:**
+   ```bash
+   python main.py push
+   ```
+   *(This creates new cards on Trello, updates modified ones, and **automatically archives** anything you deleted from the YAML).*
 
-### 2. Batch Edit in YAML
-Open `workspace/homework.yaml` in your editor.
+---
 
-* **Wipe finished work:** Simply delete the YAML block for that card.
-* **Update existing cards:** Modify properties like `due`, `desc`, or `name`. Keep the `id:` field intact.
-* **Add new cards:** Add a new item without an `id:` field:
+## 📝 How to Edit `workspace/homework.yaml`
+
+The file is grouped into two simple sections: **`Isaac`** and **`Asher`**.
 
 ```yaml
 Isaac:
-  - id: "6a962de81b0e70e0bfa214af" # Existing card (persists across runs)
+  # ── 1. PERSISTENT / EXISTING CARDS (Have an 'id:') ────────────────────────
+  # Leave the 'id:' alone. You can change the date, description, or title.
+  - id: "6a962de81b0e70e0bfa214af"
     class: French
     name: "Test - Histoire d'une Revanche"
     due: 2026-09-22
-    desc: "Class: French Fifth Grade 5th"
+    desc: "Review vocabulary chapters 1-3"
 
-  - class: Math                    # New card (no id needed!)
-    name: "BAO Ch 5 Linear Equations"
+  # ── 2. NEW ASSIGNMENTS (No 'id:' line) ───────────────────────────────────
+  # Just type class, name, and due date. The push command will create the card
+  # on Trello and auto-fill the 'id:' line for you.
+  - class: Math
+    name: "Alcumus: Linear Equations"
     due: 2026-09-24
+
+  - class: Science
+    name: "Pendulum Lab Writeup"
+    due: 2026-09-25
+    desc: "Include graph of period vs length"
 
 Asher:
   - id: "6a962dead3e82215b54adb2a"
     class: Art History
-    name: "Homework for May 27th"
-    due: 2026-05-27
-```
+    name: "Ancient Egypt Project"
+    due: 2026-09-23
 
-### 3. Validate Local File
-Verify YAML syntax, date formatting (`YYYY-MM-DD`), and structure:
-```bash
-python main.py validate
+  - class: Reading
+    name: "Read Chapter 4 out loud"
+    due: 2026-09-21
 ```
-
-### 4. Push to Trello (with Auto-Archive)
-Preview changes without modifying Trello:
-```bash
-python main.py push --dry-run
-```
-
-Apply changes:
-```bash
-python main.py push
-```
-
-* **Creates** new cards on Trello and attaches the appropriate class label.
-* **Updates** modified cards.
-* **Archives** cards on Trello that were removed from the local YAML.
-* **Backfills** generated Trello IDs into `workspace/homework.yaml`.
 
 ---
 
-## 📩 Automated Google Classroom Email Ingestion
+## 🏷️ Available Class Labels
+When adding `class: <Name>`, use any of the standard names below (case-insensitive, script matches them automatically):
 
-The tracker polls Gmail IMAP (or ingests `.eml` files), parses Google Classroom notifications, and automatically creates Trello cards in the appropriate kid's list (`Isaac` or `Asher`) tagged with the subject label.
+* `Art`
+* `Art History`
+* `Debate`
+* `English Language`
+* `English Literature`
+* `French`
+* `Geography`
+* `Good Life`
+* `Hands On Skills`
+* `Hebrew`
+* `History`
+* `Latin`
+* `Math`
+* `Math Competition`
+* `Music Theory`
+* `Robotics`
+* `Science`
 
-* **Preview Ingestion (Dry Run):**
-  ```bash
-  python main.py ingest-email --dry-run
-  ```
-* **Test Single EML File:**
-  ```bash
-  python main.py ingest-email --file "path/to/assignment.eml" --dry-run
-  ```
-* **Run Live Ingestion:**
-  ```bash
-  python main.py ingest-email
-  ```
+---
+
+## 📅 Due Date Formats
+* **Specific date:** `2026-09-23` (defaults to end-of-day on Trello)
+* **Date with time:** `2026-09-23 17:00`
+* **No specific date:** `due: null` or just omit the line
+
+---
+
+## 🗑️ How Deleting / Wiping Works
+* When you delete an assignment from `workspace/homework.yaml` and run `python main.py push`, the script notices it's gone and **archives the card on Trello**.
+* You don't have to manually swipe or clean up Trello during the week.
+
+---
+
+## 🛡️ "Oops, I Broke Something" (Safety & Backups)
+* **Pre-push preview:** Run `python main.py push --dry-run` to see a clean summary of what will be created, updated, and archived before touching Trello.
+* **Automatic Backups:** Every time you run `python main.py pull`, a timestamped snapshot of your previous `homework.yaml` is automatically saved in `workspace/backups/`. If you ever accidentally delete something, check that folder.
+
+---
+
+## ⚙️ One-Time Setup (`config.yaml`)
+Make sure your two list IDs are defined in `config.yaml`:
+```yaml
+board_id: "6a0dd7e64e205c4e01db1b21"
+
+lists:
+  Isaac: "YOUR_ISAAC_LIST_ID"
+  Asher: "YOUR_ASHER_LIST_ID"
+```
