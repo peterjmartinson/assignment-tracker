@@ -8,7 +8,7 @@ A simple text-first system for managing your boys' weekly homework on Trello wit
 
 1. **Pull the latest cards from Trello down to your machine:**
    ```bash
-   python main.py pull
+   uv run pull
    ```
 2. **Open `workspace/homework.yaml` in your editor and edit it:**
    * **Finished an assignment?** Just highlight the lines and **delete** them.
@@ -16,11 +16,11 @@ A simple text-first system for managing your boys' weekly homework on Trello wit
    * **Adjusting a date or note?** Edit `due:` or `desc:`.
 3. **Validate & Preview your changes (optional but recommended):**
    ```bash
-   python main.py push --dry-run
+   uv run push --dry-run
    ```
 4. **Push your changes back up to Trello:**
    ```bash
-   python main.py push
+   uv run push
    ```
    *(This creates new cards on Trello, updates modified ones, and **automatically archives** anything you deleted from the YAML).*
 

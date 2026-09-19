@@ -136,24 +136,24 @@ def push_command(dry_run=False):
 
         # Print Sync Summary / Preview
         print("\n================== Sync Plan ==================")
-        print(f"➕ To Create:  {len(to_create)} card(s)")
+        print(f"[+] To Create:  {len(to_create)} card(s)")
         for item in to_create:
             c = item['card']
             cls_str = f"[{c.get('class')}] " if c.get('class') else ""
             due_str = f" (Due: {c.get('due')})" if c.get('due') else ""
-            print(f"   • [{item['kid']}] {cls_str}{c.get('name')}{due_str}")
+            print(f"   - [{item['kid']}] {cls_str}{c.get('name')}{due_str}")
 
-        print(f"🔄 To Update:  {len(to_update)} card(s)")
+        print(f"[*] To Update:  {len(to_update)} card(s)")
         for item in to_update:
             c = item['card']
             cls_str = f"[{c.get('class')}] " if c.get('class') else ""
             due_str = f" (Due: {c.get('due')})" if c.get('due') else ""
-            print(f"   • [{item['kid']}] {cls_str}{c.get('name')}{due_str}")
+            print(f"   - [{item['kid']}] {cls_str}{c.get('name')}{due_str}")
 
-        print(f"🗑️  To Archive: {len(to_archive)} card(s) (removed from YAML)")
+        print(f"[-] To Archive: {len(to_archive)} card(s) (removed from YAML)")
         for c in to_archive:
             cls_str = f"[{c.get('class')}] " if c.get('class') else ""
-            print(f"   • [{c.get('kid')}] {cls_str}{c.get('name')}")
+            print(f"   - [{c.get('kid')}] {cls_str}{c.get('name')}")
         print("===============================================")
 
         if dry_run:
@@ -245,39 +245,26 @@ def ingest_email_command(dry_run=False, file_path=None, label_filter=None):
         print(f"Error during email ingestion: {e}", file=sys.stderr)
         sys.exit(1)
 
-def main():
-    parser = argparse.ArgumentParser(description="Two-List Homework Tracker & Sync Engine")
-    subparsers = parser.add_subparsers(dest="command", required=True)
+def pull_cli():
+    pull_command()
 
-    # pull
-    subparsers.add_parser("pull", help="Pull latest active cards from Trello into workspace/homework.yaml")
+def validate_cli():
+    validate_command()
 
-    # validate
-    subparsers.add_parser("validate", help="Validate workspace/homework.yaml syntax, dates, and schema")
+def push_cli():
+    parser = argparse.ArgumentParser(description="Push local workspace/homework.yaml to Trello")
+    parser.add_argument("--dry-run", action="store_true", help="Preview creations, updates, and archives without modifying Trello")
+    args, _ = parser.parse_known_args()
+    push_command(dry_run=args.dry_run)
 
-    # push
-    push_parser = subparsers.add_parser("push", help="Push local changes from workspace/homework.yaml to Trello")
-    push_parser.add_argument("--dry-run", action="store_true", help="Preview creations, updates, and archives without modifying Trello")
-
-    # ingest-email
-    ingest_parser = subparsers.add_parser(
-        "ingest-email",
-        help="Poll Gmail IMAP or ingest a .eml file and create cards in the appropriate kid's list"
-    )
-    ingest_parser.add_argument("--dry-run", action="store_true", help="Preview without creating cards")
-    ingest_parser.add_argument("--file", "-f", help="Path to .eml file")
-    ingest_parser.add_argument("--label", "-l", help="Override Gmail folder/label to scan")
-
-    args = parser.parse_args()
-
-    if args.command == "pull":
-        pull_command()
-    elif args.command == "validate":
-        validate_command()
-    elif args.command == "push":
-        push_command(dry_run=args.dry_run)
-    elif args.command == "ingest-email":
-        ingest_email_command(dry_run=args.dry_run, file_path=args.file, label_filter=args.label)
+def ingest_cli():
+    parser = argparse.ArgumentParser(description="Ingest homework from Gmail or EML")
+    parser.add_argument("--dry-run", action="store_true", help="Preview without creating cards")
+    parser.add_argument("--file", "-f", help="Path to .eml file")
+    parser.add_argument("--label", "-l", help="Override Gmail folder/label to scan")
+    args, _ = parser.parse_known_args()
+    ingest_email_command(dry_run=args.dry_run, file_path=args.file, label_filter=args.label)
 
 if __name__ == "__main__":
     main()
+

@@ -1,0 +1,96 @@
+name: Peter Martinson
+email: peter.j.martinson@gmail.com
+destination: print
+
+# ── Shared Subscriber Location ──────────────────────────────────────────────
+location:
+  name: "Bryn Mawr, PA"
+  lat: 40.02
+  lon: -75.34
+
+# ── Requested Screamsheets ──────────────────────────────────────────────────
+sheets:
+
+  mlb:
+    teams: ["Milwaukee Brewers", "Cincinnati Reds", "Arizona Diamondbacks"]
+    mad_fan: false
+
+  mlb_news:
+    teams: ["Milwaukee Brewers", "Cincinnati Reds", "Arizona Diamondbacks"]
+
+  presidential: true
+
+  sky_tonight:
+    people:
+      - name: "Pisces"
+        horoscope_style: "playbook"
+        birth_date: "1978-02-26"
+        birth_time: "01:20"
+        birth_location: "Wauwatosa, WI"
+      - name: "Virgo"
+        horoscope_style: "kepler"
+        birth_date: "1981-08-26"
+        birth_time: "13:26"
+        birth_location: "New York, NY"
+        # extra_instructions: "She is torn between staying in a higher-paying ($89k+$5k bonus) job where she recently overcame performance friction but her company is actively cutting tenured staff, or taking a $15k pay cut for a senior-level clinical monitoring role that offers a clean slate, an ally on the inside, and stronger long-term career growth. Which path does the energy favor right now?  She needs to respond yes or no tomorrow."
+
+  nfl:
+    favorite_teams:
+      - id: 21
+        name: "Philadelphia Eagles"
+      - id: 25
+        name: "Green Bay Packers"
+
+  morning_briefing:
+    api_url: "https://random-task-rouge.vercel.app/api/agenda"
+    important_senders:
+      - "annashavin@gmail.com"
+      - "mainlineclassical.org"
+      - "michelemrice@gmail.com"
+      - "vscottzelov@lowermerion.org"
+      - "asenn@theredeemer.org"
+    payload:
+      max_tasks: 15
+      output_directory: "./output"
+      default_start_location: "1041 Reese Ave., Bryn Mawr, PA 19010"
+      calendars:
+        ical_urls:
+          - name: "Personal"
+            url: ${CALENDAR_URL_PERSONAL}
+          - name: "Family"
+            url: ${CALENDAR_URL_FAMILY}
+          - name: "Geckos (Asher)"
+            url: ${CALENDAR_URL_GECKOS}
+          - name: "Tigers (Isaac)"
+            url: ${CALENDAR_URL_TIGERS}
+          - name: "Prime (Asher)"
+            url: ${CALENDAR_URL_PRIME}
+          - name: "Brawlers"
+            url: ${CALENDAR_URL_BRAWLERS}
+      google_calendar:
+        client_id: ${GOOGLE_CALENDAR_CLIENT_ID}
+        client_secret: ${GOOGLE_CALENDAR_CLIENT_SECRET}
+        refresh_token: ${GOOGLE_CALENDAR_REFRESH_TOKEN}
+        calendar_ids:
+          - ${GOOGLE_CALENDAR_ID_MLCA}
+      trello:
+        api_key: ${TRELLO_API_KEY}
+        token: ${TRELLO_TOKEN}
+        boards:
+          - name: "Homework"
+            board_id: ${TRELLO_BOARD_ID_HOMEWORK}
+            lists:
+              - ${TRELLO_LIST_ID_BACKLOG}
+              - ${TRELLO_LIST_ID_TODO}
+            labels:
+              Isaac:
+                label_id: ${TRELLO_LABEL_ID_ISAAC}
+                cover_color: "blue"
+              Asher:
+                label_id: ${TRELLO_LABEL_ID_ASHER}
+                cover_color: "green"
+        include_past_due: true
+      maps:
+        enabled: true
+        api_key: ${GOOGLE_MAPS_API_KEY}
+

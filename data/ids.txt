@@ -1,138 +1,20 @@
-    "labels": [
-        {
-            "id": "6a0dd7e67d3bffa03d62a17a",
-            "idBoard": "6a0dd7e64e205c4e01db1b21",
-            "name": "Asher",
-            "color": "green",
-            "uses": 51
-        },
-        {
-            "id": "6a0dd7e769a7a10ca5f5ced0",
-            "idBoard": "6a0dd7e64e205c4e01db1b21",
-            "name": "Isaac",
-            "color": "blue",
-            "uses": 38
-        },
-        {
-            "id": "6aadbd0fb7cb8a2905a5c942",
-            "idBoard": "6a0dd7e64e205c4e01db1b21",
-            "name": "English Literature",
-            "color": "black",
-            "uses": 3
-        },
-        {
-            "id": "6aadbafdf3114376dbba6db9",
-            "idBoard": "6a0dd7e64e205c4e01db1b21",
-            "name": "French",
-            "color": "yellow",
-            "uses": 1
-        },
-        {
-            "id": "6aadbcfbb231642770520d05",
-            "idBoard": "6a0dd7e64e205c4e01db1b21",
-            "name": "English Language",
-            "color": "sky",
-            "uses": 1
-        },
-        {
-            "id": "6aadbaf366fb1ea24ddedc78",
-            "idBoard": "6a0dd7e64e205c4e01db1b21",
-            "name": "Math",
-            "color": "red",
-            "uses": 1
-        },
-        {
-            "id": "6aadbd08b0c96f22ebd76a36",
-            "idBoard": "6a0dd7e64e205c4e01db1b21",
-            "name": "Latin",
-            "color": "pink",
-            "uses": 1
-        },
-        {
-            "id": "6aadbd2308fa831c594bcecc",
-            "idBoard": "6a0dd7e64e205c4e01db1b21",
-            "name": "Robotics",
-            "color": "yellow_light",
-            "uses": 0
-        },
-        {
-            "id": "6aadbd2926100fed4cf88573",
-            "idBoard": "6a0dd7e64e205c4e01db1b21",
-            "name": "Hebrew",
-            "color": "yellow_dark",
-            "uses": 0
-        },
-        {
-            "id": "6aadbd3f7f6c0cbdf01912df",
-            "idBoard": "6a0dd7e64e205c4e01db1b21",
-            "name": "Art History",
-            "color": "red_light",
-            "uses": 0
-        },
-        {
-            "id": "6aadbd500795f30fcf076abc",
-            "idBoard": "6a0dd7e64e205c4e01db1b21",
-            "name": "Geography",
-            "color": "purple_dark",
-            "uses": 0
-        },
-        {
-            "id": "6aadbcf089198d582664bdd8",
-            "idBoard": "6a0dd7e64e205c4e01db1b21",
-            "name": "Music Theory",
-            "color": "purple",
-            "uses": 0
-        },
-        {
-            "id": "6aadbd3285f5f8d7612e75fb",
-            "idBoard": "6a0dd7e64e205c4e01db1b21",
-            "name": "Hands On Skills",
-            "color": "orange_light",
-            "uses": 0
-        },
-        {
-            "id": "6aadbd384b059b94f7ab92f6",
-            "idBoard": "6a0dd7e64e205c4e01db1b21",
-            "name": "Art",
-            "color": "orange_dark",
-            "uses": 0
-        },
-        {
-            "id": "6aadbb03a1018d731b6e18ff",
-            "idBoard": "6a0dd7e64e205c4e01db1b21",
-            "name": "History",
-            "color": "orange",
-            "uses": 0
-        },
-        {
-            "id": "6aadbd5cecce91f4110b3a8f",
-            "idBoard": "6a0dd7e64e205c4e01db1b21",
-            "name": "Good Life",
-            "color": "lime_dark",
-            "uses": 0
-        },
-        {
-            "id": "6aadbd02769d2553ab5b0685",
-            "idBoard": "6a0dd7e64e205c4e01db1b21",
-            "name": "Science",
-            "color": "lime",
-            "uses": 0
-        },
-        {
-            "id": "6aadbd168c9b48dc43c6bc5f",
-            "idBoard": "6a0dd7e64e205c4e01db1b21",
-            "name": "Debate",
-            "color": "green_light",
-            "uses": 0
-        },
-        {
-            "id": "6aadbd1d364be99baf7af66d",
-            "idBoard": "6a0dd7e64e205c4e01db1b21",
-            "name": "Math Competition",
-            "color": "green_dark",
-            "uses": 0
-        }
-    ],
+Art
+Art History
+Debate
+English Language
+English Literature
+French
+Geography
+Good Life
+Hands On Skills
+Hebrew
+History
+Latin
+Math
+Math Competition
+Music Theory
+Robotics
+Science
 
                 "list": {
                     "id": "6aadba784431fba8472396f0",
