@@ -116,3 +116,29 @@ lists:
   Isaac: "YOUR_ISAAC_LIST_ID"
   Asher: "YOUR_ASHER_LIST_ID"
 ```
+
+---
+
+## 🖨️ Weekly Fridge Printout
+
+Generate a clear, large-print, single-page landscape PDF for the fridge with a single command. It follows a two-stage process: pulling cards from Trello, saving a clean hierarchy to Markdown, and rendering a spartan, black-and-white, right-angled PDF.
+
+```bash
+# Default: pulls fresh cards from Trello and generates upcoming Monday-to-Friday week
+uv run printout
+
+# Did one of the boys eat the copy on the fridge? Re-print the current week:
+uv run printout --this-week
+
+# Generate and immediately pop open the PDF in your default viewer:
+uv run printout --open
+
+# Generate from your local workspace/homework.yaml without pulling from Trello:
+uv run printout --no-pull
+```
+
+### Hierarchy & Design Details:
+1. **Hierarchy:** `Day of Week (Mon-Fri)` ➔ `Boy` ➔ `Subject (Trello label)` ➔ `[ ] Title` (indented description below).
+2. **Design:** Spartan, completely black-and-white, sharp right-angled corners, spelled-out month names (`September 28 – October 2, 2026`), and square checkboxes.
+3. **Markdown Stage:** [`workspace/homework_week.md`](workspace/homework_week.md)
+4. **Print-Ready PDF:** [`workspace/homework_week.pdf`](workspace/homework_week.pdf) (fits 1 landscape page, large bold fonts, checkboxes ready for pen/pencil checkoffs).

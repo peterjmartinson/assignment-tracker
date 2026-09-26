@@ -16,6 +16,7 @@ from src.trello_utils import (
     WORKSPACE_FILE
 )
 from src.ingest import ingest_from_gmail, ingest_from_eml_file
+from src.printout import generate_weekly_printout
 
 def pull_command():
     try:
@@ -264,6 +265,69 @@ def ingest_cli():
     parser.add_argument("--label", "-l", help="Override Gmail folder/label to scan")
     args, _ = parser.parse_known_args()
     ingest_email_command(dry_run=args.dry_run, file_path=args.file, label_filter=args.label)
+
+def printout_command(this_week=False, date_str=None, no_pull=False, open_pdf=False):
+    try:
+        target = "this" if this_week else "next"
+        generate_weekly_printout(
+            target=target,
+            ref_date_str=date_str,
+            no_pull=no_pull,
+            open_pdf=open_pdf
+        )
+    except Exception as e:
+        print(f"Error during printout generation: {e}", file=sys.stderr)
+        sys.exit(1)
+
+def printout_cli():
+    parser = argparse.ArgumentParser(description="Generate one-page landscape PDF fridge printout of weekly homework")
+    parser.add_argument("--this-week", action="store_true", help="Generate for current week instead of next week")
+    parser.add_argument("--next-week", action="store_true", help="Generate for next week (default)")
+    parser.add_argument("--date", "-d", help="Generate for the week containing this date (YYYY-MM-DD)")
+    parser.add_argument("--no-pull", "--offline", action="store_true", help="Skip pulling from Trello; use existing workspace/homework.yaml")
+    parser.add_argument("--open", "-o", action="store_true", help="Open the generated PDF in default viewer")
+    args, _ = parser.parse_known_args()
+    printout_command(
+        this_week=args.this_week,
+        date_str=args.date,
+        no_pull=args.no_pull,
+        open_pdf=args.open
+    )
+
+def main():
+    parser = argparse.ArgumentParser(description="Assignment Tracker CLI")
+    subparsers = parser.add_subparsers(dest="command", help="Available subcommands")
+
+    subparsers.add_parser("pull", help="Pull cards from Trello into workspace/homework.yaml")
+    push_p = subparsers.add_parser("push", help="Push workspace/homework.yaml to Trello")
+    push_p.add_argument("--dry-run", action="store_true", help="Preview changes without pushing")
+    subparsers.add_parser("validate", help="Validate workspace/homework.yaml")
+    ingest_p = subparsers.add_parser("ingest", help="Ingest assignments from Gmail or EML")
+    ingest_p.add_argument("--dry-run", action="store_true", help="Preview without creating cards")
+    ingest_p.add_argument("--file", "-f", help="Path to .eml file")
+    ingest_p.add_argument("--label", "-l", help="Override Gmail label")
+
+    print_p = subparsers.add_parser("printout", help="Generate one-page weekly fridge printout")
+    print_p.add_argument("--this-week", action="store_true", help="Generate for current week")
+    print_p.add_argument("--next-week", action="store_true", help="Generate for next week (default)")
+    print_p.add_argument("--date", "-d", help="Generate for week containing YYYY-MM-DD")
+    print_p.add_argument("--no-pull", "--offline", action="store_true", help="Skip Trello pull")
+    print_p.add_argument("--open", "-o", action="store_true", help="Open PDF in default viewer")
+
+    args = parser.parse_args()
+
+    if args.command == "pull":
+        pull_command()
+    elif args.command == "push":
+        push_command(dry_run=args.dry_run)
+    elif args.command == "validate":
+        validate_command()
+    elif args.command == "ingest":
+        ingest_email_command(dry_run=args.dry_run, file_path=args.file, label_filter=args.label)
+    elif args.command == "printout":
+        printout_command(this_week=args.this_week, date_str=args.date, no_pull=args.no_pull, open_pdf=args.open)
+    else:
+        parser.print_help()
 
 if __name__ == "__main__":
     main()
