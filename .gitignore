@@ -220,5 +220,6 @@ __marimo__/
 board.json
 .processed_emails.json
 workspace/backups/
+workspace/homework_week.*
 *_homework.json
 *.swp

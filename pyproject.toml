@@ -9,6 +9,7 @@ description = "Two-list homework tracker and Trello sync engine"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "markdown>=3.11",
     "python-dateutil>=2.9.0.post0",
     "python-dotenv>=1.2.2",
     "pyyaml>=6.0.3",
@@ -20,6 +21,7 @@ pull = "main:pull_cli"
 push = "main:push_cli"
 validate = "main:validate_cli"
 ingest = "main:ingest_cli"
+printout = "main:printout_cli"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src"]

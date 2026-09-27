@@ -2,8 +2,8 @@ board_id: "6a0dd7e64e205c4e01db1b21"
 
 # Map kid names to Trello List IDs
 lists:
-  Isaac: "6a0dd7fc14b166b8906b1202"
-  Asher: "6a0dd7f189ae4d6d94e4332e"
+  Isaac: "6aadba784431fba8472396f0"
+  Asher: "6aadba75f7abaaaf39a7d2c6"
 
 # Gmail IMAP Configuration for automated server polling
 gmail:
