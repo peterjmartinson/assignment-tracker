@@ -1,0 +1,8 @@
+{
+  "framework": null,
+  "functions": {
+    "api/homework.js": {
+      "includeFiles": "config.yaml"
+    }
+  }
+}

@@ -223,3 +223,6 @@ workspace/backups/
 workspace/homework_week.*
 *_homework.json
 *.swp
+
+node_modules/
+.vercel/
