@@ -33,8 +33,11 @@ def seed_sheets_command(force: bool = False):
             target_url,
             data=requests.compat.json.dumps(STARTER_WEEKLY_ITEMS),
             headers={"Content-Type": "text/plain;charset=utf-8"},
-            timeout=15,
+            allow_redirects=False,
+            timeout=30,
         )
+        if res.status_code in (301, 302, 303, 307, 308) and res.headers.get("Location"):
+            res = requests.get(res.headers["Location"], timeout=30)
         res.raise_for_status()
         save_snapshot(STARTER_WEEKLY_ITEMS)
         print(f"[SUCCESS] Seeded Google Sheet '{sheet_name}' with {len(STARTER_WEEKLY_ITEMS)} weekly assignments!")
