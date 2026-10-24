@@ -1,7 +1,7 @@
 google_sheets:
   sheet_name: "Homework"
   # Paste your deployed Google Apps Script Web App URL here (or set GOOGLE_SCRIPT_URL in Vercel)
-  script_url: ""
+  script_url: "https://script.google.com/macros/s/AKfycbwCzCbBDMBNV3K2qewt6SFMsUNyCOELfxEiQPYUUM4bcxTyrwK0vh1bY-vn85qcvLU/exec"
 
 settings:
   upcoming_lookahead_days: 3

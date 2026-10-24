@@ -3,7 +3,7 @@ import jsyaml from 'js-yaml';
 export const DEFAULT_CONFIG = {
   google_sheets: {
     sheet_name: 'Homework',
-    script_url: ''
+    script_url: 'https://script.google.com/macros/s/AKfycbwCzCbBDMBNV3K2qewt6SFMsUNyCOELfxEiQPYUUM4bcxTyrwK0vh1bY-vn85qcvLU/exec'
   },
   settings: {
     upcoming_lookahead_days: 3,

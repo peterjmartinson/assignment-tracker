@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "assignment-tracker"
-version = "0.1.0"
-description = "Two-list homework tracker and Trello sync engine"
+version = "2.0.0"
+description = "Homework Tracker v2 (Google Sheets + Vercel Web UI + Rotated Fridge Printout)"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -17,11 +17,8 @@ dependencies = [
 ]
 
 [project.scripts]
-pull = "main:pull_cli"
-push = "main:push_cli"
-validate = "main:validate_cli"
-ingest = "main:ingest_cli"
 printout = "main:printout_cli"
+seed = "main:seed_cli"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src"]
